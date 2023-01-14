@@ -5,11 +5,12 @@ import re
 import torch
 # from keras.preprocessing.sequence import pad_sequences
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler,Dataset
-from transformers import BertForNextSentencePrediction, AdamW, BertConfig
+from transformers import BertForNextSentencePrediction, AdamW, BertConfig, AutoTokenizer, DataCollatorWithPadding
 from sklearn.model_selection import train_test_split
 from transformers import get_linear_schedule_with_warmup
 import torch.nn as nn
 import pandas as pd
+from tqdm import tqdm
 
 
 def MarginRankingLoss(p_scores, n_scores):
@@ -22,7 +23,7 @@ def MarginRankingLoss(p_scores, n_scores):
 device = 0
 # Load the BERT tokenizer.
 print('Loading BERT tokenizer...')
-tokenizer = BertTokenizer.from_pretrained('klue/bert-base', do_lower_case=True)
+tokenizer = AutoTokenizer.from_pretrained('klue/bert-base', do_lower_case=True)
 
 sample_num_memory = []
 id_inputs = []
@@ -32,63 +33,68 @@ id_inputs = []
 #     line = line.strip()
 #     sample_num_memory.append(int(line))
 class DTSDataset(Dataset):
-    def __init__(self,path,tokenizer) -> None:
+    def __init__(self,df,tokenizer) -> None:
         super(DTSDataset,self).__init__()
-        self.data = pd.read_csv(path)
+        self.data = df
         self.tokenizer = tokenizer
-        self.dataset = self._tokenizing(self.data)
         self.label = [1]
+        self.dataset = self._tokenizing(df)
     
     def _tokenizing(self,df):
         output =[]
         for idx, item in df.iterrows():
-            token = self.tokenizer(item['Message'],item['Message2'],add_special_tokens = True, max_length = 128, padding = 'max_length',return_tensors = 'pt')
+            token = self.tokenizer(item['Message'],item['Message2'],add_special_tokens = True, max_length = 128, padding = 'longest',truncation = True,return_tensors = 'pt')
             output.append(token)
         return output
 
     def __len__(self):
         return len(self.data)
     def __getitem__(self, idx):
-        return {'input_ids' : self.dataset[idx]['input_ids'],
-                 'attention_mask' : self.dataset[idx]['attention_mask'],
+        neg_idx = random.sample([i for i in range(len(self.data)) if i != idx], 1)[0]#len(idx))
+        return {'pos_input_ids' : self.dataset[idx]['input_ids'].squeeze(0),
+                 'pos_attention_mask' : self.dataset[idx]['attention_mask'].squeeze(0),
+                'neg_input_ids' : self.dataset[neg_idx]['input_ids'].squeeze(0),
+                 'neg_attention_mask' : self.dataset[neg_idx]['attention_mask'].squeeze(0),
                  'label' : torch.tensor(self.label)}
 PATH = '/opt/ml/input/data/poc/KakaoTalk_Chat.csv'
-dataset = DTSDataset(PATH,tokenizer)
-print('The group number is: '+ str(len(dataset)))
+df = pd.read_csv(PATH)
+
+print('The group number is: '+ str(len(df)))
 # generate pos/neg pairs ....
 print('start generating pos and neg pairs ... ')
 
 ####################### 여기부터 미완 ###################################
 # TODO : Sampling 방법 고안해보기
 # 
-pos_neg_pairs = []; pos_neg_masks = []
-for i in range(len(dataset)):
-    if len(dataset[i]) == 2:
-        pos_neg_pairs.append(dataset[i])
-        pos_neg_masks.append(dataset[i])
-    else:
-        pos_neg_pairs.append([dataset[i][0], dataset[i][1]])
-        pos_neg_pairs.append([dataset[i][0], dataset[i][2]])
-        pos_neg_pairs.append([dataset[i][1], dataset[i][2]])
-        pos_neg_masks.append([dataset[i][0], dataset[i][1]])
-        pos_neg_masks.append([dataset[i][0], dataset[i][2]])
-        pos_neg_masks.append([dataset[i][1], dataset[i][2]])
+# pos_neg_pairs = []; pos_neg_masks = []
+# for i in range(len(dataset)):
+#     if len(dataset[i]) == 2:
+#         pos_neg_pairs.append(dataset[i])
+#         pos_neg_masks.append(dataset[i])
+#     else:
+#         pos_neg_pairs.append([dataset[i][0], dataset[i][1]])
+#         pos_neg_pairs.append([dataset[i][0], dataset[i][2]])
+#         pos_neg_pairs.append([dataset[i][1], dataset[i][2]])
+#         pos_neg_masks.append([dataset[i][0], dataset[i][1]])
+#         pos_neg_masks.append([dataset[i][0], dataset[i][2]])
+#         pos_neg_masks.append([dataset[i][1], dataset[i][2]])
 
-print('there are '+str(len(pos_neg_pairs))+' samples been generated...')
-fake_labels = [0]*len(pos_neg_pairs)
+# print('there are '+str(len(pos_neg_pairs))+' samples been generated...')
+fake_labels = [0]*len(df)
 
-train_inputs, validation_inputs, train_labels, validation_labels = train_test_split(pos_neg_pairs, fake_labels, random_state=42, test_size=0.8)
+train_inputs, validation_inputs, train_labels, validation_labels = train_test_split(df, fake_labels, random_state=42, test_size=0.8)
 # Do the same for the masks.
-train_masks, validation_masks, _, _ = train_test_split(pos_neg_masks, fake_labels, random_state=42, test_size=0.8)
-
+train_dataset = DTSDataset(train_inputs,tokenizer)
+valid_dataset = DTSDataset(validation_inputs,tokenizer)
+data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=8)
 
 batch_size = 16
-train_sampler = RandomSampler(dataset)
-train_dataloader = DataLoader(dataset, sampler=train_sampler, batch_size=batch_size)
+train_sampler = RandomSampler(train_dataset)
+train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=batch_size,collate_fn=data_collator)
 # Create the DataLoader for our validation set.
 
-validation_sampler = SequentialSampler(dataset)
-validation_dataloader = DataLoader(dataset, sampler=validation_sampler, batch_size=batch_size)
+validation_sampler = SequentialSampler(valid_dataset)
+validation_dataloader = DataLoader(valid_dataset, sampler=validation_sampler, batch_size=batch_size,collate_fn=data_collator)
 
 coherence_prediction_decoder = []
 coherence_prediction_decoder.append(nn.Linear(768, 768))
@@ -122,22 +128,24 @@ for epoch_i in range(0, epochs):
     model.train()
     coherence_prediction_decoder.train()
 
-    for step, batch in enumerate(train_dataloader):
+    for step, batch in tqdm(enumerate(train_dataloader),desc = 'train_step', total = len(train_dataset)):
 
         if step % 1000 == 0 and not step == 0:
             print(str(step)+' steps done....')
 
-        b_input_ids = batch[0].to(device)
-        b_input_mask = batch[1].to(device)
+        pos_input_ids = batch['pos_input_ids'].to(device)
+        neg_input_ids = batch['neg_input_ids'].to(device)
+        pos_input_mask = batch['pos_attention_mask'].to(device)
+        neg_input_mask = batch['neg_attention_mask'].to(device)
         model.zero_grad()
         coherence_prediction_decoder.zero_grad()
 
-        pos_scores = model(b_input_ids[:,0,:], attention_mask=b_input_mask[:,0,:])
-        pos_scores = pos_scores[1][-1][:,0,:]
+        pos_scores = model(input_ids = pos_input_ids, attention_mask=pos_input_mask).hidden_states[0]
+        pos_scores = pos_scores[:,0,:]
         pos_scores = coherence_prediction_decoder(pos_scores)
 
-        neg_scores = model(b_input_ids[:,1,:], attention_mask=b_input_mask[:,1,:])
-        neg_scores = neg_scores[1][-1][:,0,:]
+        neg_scores = model(input_ids = neg_input_ids, attention_mask=neg_input_mask).hidden_states[0]
+        neg_scores = neg_scores[:,0,:]
         neg_scores = coherence_prediction_decoder(neg_scores)
 
         #loss = MarginRankingLoss(pos_scores[0][:,0], neg_scores[0][:,0])
@@ -162,22 +170,24 @@ for epoch_i in range(0, epochs):
     all_pos_scores = []
     all_neg_scores = []
 
-    for step, batch in enumerate(validation_dataloader):
+    for step, batch in tqdm(enumerate(validation_dataloader),desc = 'validation_step',total = len(valid_dataset)):
 
         if step % 1000 == 0 and not step == 0:
             print(str(step)+' steps done....')
 
-        b_input_ids = batch[0].to(device)
-        b_input_mask = batch[1].to(device)
+        pos_input_ids = batch['pos_input_ids'].to(device)
+        neg_input_ids = batch['neg_input_ids'].to(device)
+        pos_input_mask = batch['pos_attention_mask'].to(device)
+        neg_input_mask = batch['neg_attention_mask'].to(device)
 
         with torch.no_grad():
-            pos_scores = model(b_input_ids[:,0,:], attention_mask=b_input_mask[:,0,:])
-            pos_scores = pos_scores[1][-1][:,0,:]
+            pos_scores = model(input_ids = pos_input_ids, attention_mask=pos_input_mask).hidden_states[0]
+            pos_scores = pos_scores[:,0,:]
             pos_scores = coherence_prediction_decoder(pos_scores)
-            neg_scores = model(b_input_ids[:,1,:], attention_mask=b_input_mask[:,1,:])
-            neg_scores = neg_scores[1][-1][:,0,:]
-            neg_scores = coherence_prediction_decoder(neg_scores)
 
+            neg_scores = model(input_ids =neg_input_ids, attention_mask=neg_input_mask).hidden_states[0]
+            neg_scores = neg_scores[:,0,:]
+            neg_scores = coherence_prediction_decoder(neg_scores)
         #all_pos_scores += pos_scores[0][:,0].detach().cpu().numpy().tolist()
         #all_neg_scores += neg_scores[0][:,0].detach().cpu().numpy().tolist()
         all_pos_scores += pos_scores[:,0].detach().cpu().numpy().tolist()
@@ -191,7 +201,7 @@ for epoch_i in range(0, epochs):
         else:
             labels.append(0)
 
-    print(sum(labels)/float(len(all_pos_scores)))
+    print('label must be',sum(labels)/float(len(all_pos_scores)))
 
     '''
     PATH = '/scratch/linzi/bert_'+str(epoch_i)
