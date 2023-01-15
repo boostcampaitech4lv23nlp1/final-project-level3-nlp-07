@@ -1,17 +1,16 @@
 import argparse
-import random
 from transformers import BertTokenizer
 import re
 import torch
 # from keras.preprocessing.sequence import pad_sequences
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler,Dataset
+from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import BertForNextSentencePrediction, AdamW, BertConfig, AutoTokenizer, DataCollatorWithPadding
 from sklearn.model_selection import train_test_split
 from transformers import get_linear_schedule_with_warmup
 import torch.nn as nn
 import pandas as pd
 from tqdm import tqdm
-
+from load_dataset import DTSDataset
 
 def MarginRankingLoss(p_scores, n_scores):
     margin = 1
@@ -24,6 +23,17 @@ device = 0
 # Load the BERT tokenizer.
 print('Loading BERT tokenizer...')
 tokenizer = AutoTokenizer.from_pretrained('klue/bert-base', do_lower_case=True)
+coherence_prediction_decoder = []
+coherence_prediction_decoder.append(nn.Linear(768, 768))
+coherence_prediction_decoder.append(nn.ReLU())
+coherence_prediction_decoder.append(nn.Dropout(p=0.1))
+coherence_prediction_decoder.append(nn.Linear(768, 2))
+coherence_prediction_decoder = nn.Sequential(*coherence_prediction_decoder)
+coherence_prediction_decoder.to(device)
+
+model = BertForNextSentencePrediction.from_pretrained("klue/bert-base", num_labels = 2, output_attentions = False, output_hidden_states = True)
+model.cuda(device)
+optimizer = AdamW(list(model.parameters())+list(coherence_prediction_decoder.parameters()), lr = 2e-5, eps = 1e-8)
 
 sample_num_memory = []
 id_inputs = []
@@ -32,30 +42,7 @@ id_inputs = []
 # for line in open('/ubc/cs/research/nlp/Linzi/dailydial/dailydial_sample_num.txt'):
 #     line = line.strip()
 #     sample_num_memory.append(int(line))
-class DTSDataset(Dataset):
-    def __init__(self,df,tokenizer) -> None:
-        super(DTSDataset,self).__init__()
-        self.data = df
-        self.tokenizer = tokenizer
-        self.label = [1]
-        self.dataset = self._tokenizing(df)
-    
-    def _tokenizing(self,df):
-        output =[]
-        for idx, item in df.iterrows():
-            token = self.tokenizer(item['Message'],item['Message2'],add_special_tokens = True, max_length = 128, padding = 'longest',truncation = True,return_tensors = 'pt')
-            output.append(token)
-        return output
 
-    def __len__(self):
-        return len(self.data)
-    def __getitem__(self, idx):
-        neg_idx = random.sample([i for i in range(len(self.data)) if i != idx], 1)[0]#len(idx))
-        return {'pos_input_ids' : self.dataset[idx]['input_ids'].squeeze(0),
-                 'pos_attention_mask' : self.dataset[idx]['attention_mask'].squeeze(0),
-                'neg_input_ids' : self.dataset[neg_idx]['input_ids'].squeeze(0),
-                 'neg_attention_mask' : self.dataset[neg_idx]['attention_mask'].squeeze(0),
-                 'label' : torch.tensor(self.label)}
 PATH = '/opt/ml/input/data/poc/KakaoTalk_Chat.csv'
 df = pd.read_csv(PATH)
 
@@ -96,17 +83,6 @@ train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=b
 validation_sampler = SequentialSampler(valid_dataset)
 validation_dataloader = DataLoader(valid_dataset, sampler=validation_sampler, batch_size=batch_size,collate_fn=data_collator)
 
-coherence_prediction_decoder = []
-coherence_prediction_decoder.append(nn.Linear(768, 768))
-coherence_prediction_decoder.append(nn.ReLU())
-coherence_prediction_decoder.append(nn.Dropout(p=0.1))
-coherence_prediction_decoder.append(nn.Linear(768, 2))
-coherence_prediction_decoder = nn.Sequential(*coherence_prediction_decoder)
-coherence_prediction_decoder.to(device)
-
-model = BertForNextSentencePrediction.from_pretrained("klue/bert-base", num_labels = 2, output_attentions = False, output_hidden_states = True)
-model.cuda(device)
-optimizer = AdamW(list(model.parameters())+list(coherence_prediction_decoder.parameters()), lr = 2e-5, eps = 1e-8)
 
 epochs = 10
 # Total number of training steps is number of batches * number of epochs.
