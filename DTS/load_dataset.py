@@ -3,38 +3,48 @@ import pandas as pd
 import random
 import re
 import torch
+from tqdm import tqdm
 class DTSDataset(Dataset):
     def __init__(self,df,tokenizer) -> None:
         super(DTSDataset,self).__init__()
-        self.data = self._preprocessing(df)
         self.tokenizer = tokenizer
-        self.label = [1]
-        self.dataset = self._tokenizing(df)
+        self.label = [0]*len(df)
+        # self.dataset = self._tokenizing(self.data)
+        self.dataset = self._tokenizing(self._preprocessing(df))
     
     def _tokenizing(self,df):
         output =[]
-        for idx, item in df.iterrows():
-            token = self.tokenizer(item['Message'],item['Message2'],add_special_tokens = True, max_length = 128, padding = 'longest',truncation = True,return_tensors = 'pt')
-            output.append(token)
+        for idx, item in tqdm(df.iterrows(),total=len(df)):
+            neg_idx = random.sample([i for i in range(len(df)) if i != idx], 1)[0]#len(idx))
+            # print(neg_idx,idx)
+            # print('-'*100, type(self.data.iloc[neg_idx]['Message']), self.data.iloc[neg_idx]['Message'])
+            pos_token = self.tokenizer(item['Message'],item['Message2'],add_special_tokens = True, max_length = 128, padding = 'longest',truncation = True,return_tensors = 'pt')
+            neg_token = self.tokenizer(item['Message'],df.iloc[neg_idx]['Message2'],add_special_tokens = True, max_length = 128, padding = 'max_length',truncation = True,return_tensors = 'pt')
+            output.append([pos_token,neg_token])
         return output
 
     def __len__(self):
-        return len(self.data)
+        return len(self.dataset)
     def __getitem__(self, idx):
-        neg_idx = random.sample([i for i in range(len(self.data)) if i != idx], 1)[0]#len(idx))
-        return {'pos_input_ids' : self.dataset[idx]['input_ids'].squeeze(0),
-                 'pos_attention_mask' : self.dataset[idx]['attention_mask'].squeeze(0),
-                'neg_input_ids' : self.dataset[neg_idx]['input_ids'].squeeze(0),
-                 'neg_attention_mask' : self.dataset[neg_idx]['attention_mask'].squeeze(0),
-                 'label' : torch.tensor(self.label)}
+        # print('neg_input_ids' , self.dataset[idx][1]['input_ids'].squeeze(0))
+        return {'input_ids' : self.dataset[idx][0]['input_ids'].squeeze(0),
+                 'attention_mask' : self.dataset[idx][0]['attention_mask'].squeeze(0),
+                'neg_input_ids' : self.dataset[idx][1]['input_ids'].squeeze(0),
+                 'neg_attention_mask' : self.dataset[idx][1]['attention_mask'].squeeze(0),
+                 'label' : torch.tensor(self.label[idx])}
+        # return {'input_ids' : [self.dataset[idx][0]['input_ids'].squeeze(0),self.dataset[idx][1]['input_ids'].squeeze(0)],
+        #          'attention_mask' : [self.dataset[idx][0]['attention_mask'].squeeze(0),self.dataset[idx][1]['attention_mask'].squeeze(0)],
+        #          'label' : torch.tensor(self.label[idx])}
     def _preprocessing(self,df):
         df["id_boolean"] = df["User"].apply(self.id_check)                   # 방장봇이 대화하면 제거
         df["Message"] = df["Message"].apply(self.text_replace)               # \n, 링크 전처리 작업
         df["text_boolean"] = df["Message"].apply(self.text_processing)       # 제거 목록 전처리 작업
 
-        df = df[(df["id_boolean"] == True) & (df["text_boolean"] == True)][["Date", "User", "Message"]]     # 전처리 작업 후 (True & True) Data 사용
-        df['Message2'] = pd.concat([pd.Series('None'),df['Message'][:-1]]).reset_index(drop=True)           # window 작업
+        df = df[(df["id_boolean"] == True) & (df["text_boolean"] == True)]     # 전처리 작업 후 (True & True) Data 사용
+        df.reset_index(drop=True,inplace = True)
+        df['Message2'] = pd.concat([df['Message'].iloc[1:],pd.Series('None')]).reset_index(drop=True)           # window 작업
         df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)                                  # date 날짜화 str -> datetime
+        df = df[["Date", "User", "Message","Message2"]]
         # df_filtered2 = df[ df['Date'].isin(pd.date_range('2022-12-16', '2022-12-17',freq = 's'))] # 원하는 일자별로 자를 수도 있음묘 
         return df
 
