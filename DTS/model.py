@@ -26,7 +26,7 @@ coherence_prediction_decoder = []
 coherence_prediction_decoder.append(nn.Linear(768, 768))
 coherence_prediction_decoder.append(nn.ReLU())
 coherence_prediction_decoder.append(nn.Dropout(p=0.1))
-coherence_prediction_decoder.append(nn.Linear(768, 2))
+coherence_prediction_decoder.append(nn.Linear(768, 2)) # label : 2개 positive, negtive
 coherence_prediction_decoder = nn.Sequential(*coherence_prediction_decoder)
 coherence_prediction_decoder.to(device)
 
