@@ -1,12 +1,12 @@
 import pandas as pd
 import re
 
-path ="/opt/ml/preprocess/data/"                                                # 파일의 폴더 경로
-output_path = "/opt/ml/preprocess/train_output/"
+path ="/opt/ml/final-project-level3-nlp-07/preprocess/data/data/"                                                # 파일의 폴더 경로
+output_path = "/opt/ml/final-project-level3-nlp-07/preprocess/data/train_output/"
 
 df = pd.read_csv(path + "train_DTS1.csv")                         # csv 파일 DataFrame으로 불러오기
 hate_df = pd.read_csv(path + "hate_data.csv")
-hate = hate_df["hate"].tolist()
+hate = sorted(hate_df["hate"], key=len, reverse=True)
 
 df = df[1:]                                                     # 내보내기 후 첫 대화는 카카오톡 안내사항
 
@@ -47,6 +47,9 @@ def text_replace(dialog):                                       # '\n' -> ' ' , 
     web = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
     dialog = re.sub(pattern=web, repl ="[LINK]", string=dialog)
 
+    # emoji_pattern = re.compile("["u"\U00010000-\U0010FFFF""]+", flags=re.UNICODE)         # 유니코드 기준 이모티콘 제거
+    # dialog = emoji_pattern.sub(r'', dialog)
+
     dialog = " ".join(dialog.split())                           # 다중 공백 -> 한개의 공백
 
     return dialog.strip()
@@ -62,6 +65,15 @@ def useless(dialog):                                             # min_length �
 
     return True
 
+def hate_replace(dialog):                                        # 혐오발언 및 욕설 "*"으로 치환
+
+    for i in hate:
+        if i in dialog:
+            dialog = dialog.replace(i, '*'*len(i))
+            dialog = " ".join(dialog.split())
+
+    return dialog.strip()
+
 def same(df):                                                   # 한 사람이 주요 정보를 여러개 발화로 할 경우 → 한 문장으로 보기
     before_id = ""
     idx = -1
@@ -76,7 +88,6 @@ def same(df):                                                   # 한 사람이 
             idx = index
     
     df = df[df["same_id"] == True][["Date", "User", "Message", "Label"]].reset_index(drop=True)
-    # df = df[df["same_id"] == True][["Date", "User", "Message"]].reset_index(drop=True)
 
     return df
 
@@ -89,17 +100,16 @@ def same(df):                                                   # 한 사람이 
 print(len(df))
 df["id_boolean"] = df["User"].apply(id_check)                   # 방장봇이 대화하면 제거
 df["Message"] = df["Message"].apply(text_replace)               # \n, 링크 전처리 작업
+df["Message"] = df["Message"].apply(hate_replace)
 df["text_boolean"] = df["Message"].apply(text_processing)       # 제거 목록 전처리 작업
 
 df = df[(df["id_boolean"] == True) & (df["text_boolean"] == True)][["Date", "User", "Message", "Label"]]     # 전처리 작업 후 (True & True) Data 사용
-# df = df[(df["id_boolean"] == True) & (df["text_boolean"] == True)][["Date", "User", "Message"]]
 
 df["same_id"] = True
 df = same(df)
 
 df["length"] = df["Message"].apply(useless)                     # 데이터 길이가 min_length 이상 max_length 이하 데이터만 사용
 df = df[df["length"] == True][["Date", "User", "Message", "Label"]].reset_index(drop=True)       # 모든 작업이 완료된 DataFrame
-# df = df[df["length"] == True][["Date", "User", "Message"]].reset_index(drop=True)
 
 print(len(df))
 
