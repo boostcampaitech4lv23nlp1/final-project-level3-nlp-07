@@ -1,6 +1,5 @@
 import logging
 import sys
-from arguments import train_args
 import transformers
 import datasets
 
@@ -14,7 +13,7 @@ def set_logging(__name__: str):
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 
-    log_level = train_args.get_process_log_level()
+    log_level = logging.INFO
     logger.setLevel(log_level)
     datasets.utils.logging.set_verbosity(log_level)
     transformers.utils.logging.set_verbosity(log_level)

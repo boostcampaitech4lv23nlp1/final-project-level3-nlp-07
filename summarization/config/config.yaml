@@ -15,12 +15,12 @@ arg:
     max_source_length: 512
     max_target_length: 128
     source_prefix: None
-    preprocessing_num_workers: None    
-    max_train_samples: None
-    val_max_target_length: None
-    max_eval_samples: None
-    num_beams: None
-    resize_position_embeddings: None
+    preprocessing_num_workers: # None    
+    max_train_samples: # None
+    val_max_target_length: # None
+    max_eval_samples: # None
+    num_beams: # None
+    resize_position_embeddings: # None
 
 train:
     seed: 42

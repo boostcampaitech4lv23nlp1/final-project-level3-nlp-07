@@ -1,4 +1,4 @@
-from arguments import args,train_args
+from arguments import args, train_args
 from model import load_model_tokenizer
 from logger import set_logging
 from transformers import  PreTrainedTokenizerFast
@@ -17,7 +17,7 @@ model, tokenizer = load_model_tokenizer(logger)
 max_target_length = args.max_target_length
 padding = "max_length" if args.pad_to_max_length else False
 
-if train_args.label_smoothing_factor > 0 and not hasattr(model, "prepare_decoder_input_ids_from_labels"):
+if train_args.args.label_smoothing_factor > 0 and not hasattr(model, "prepare_decoder_input_ids_from_labels"):
     logger.warning(
         "label_smoothing is enabled but the `prepare_decoder_input_ids_from_labels` method is not defined for"
     )

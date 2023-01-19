@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 from omegaconf import OmegaConf
 from transformers import HfArgumentParser, Seq2SeqTrainingArguments
+from typing import Optional
 
 import argparse
-from typing import Optional
 
 
 # parser
@@ -39,49 +39,53 @@ class Arguments:
         default=cfg.arg.ignore_pad_token_for_loss, 
         metadata={"help": "loss 계산에서 padded label에 해당하는 token을 무시할지의 여부"})  
 
-    max_source_length: int = field(
+    max_source_length: Optional[int] = field(
         default=cfg.arg.max_source_length, 
         metadata={"help": "최대 input sequence 길이. 이 값보다 긴 tokenized sequence는 잘리고, 짧은 sequence는 padding된다."})  
 
-    source_prefix: str = field(
+    source_prefix: Optional[str] = field(
         default=cfg.arg.source_prefix,  # "summarize: "
         metadata={"help": "모든 source text 앞에 추가할 접두사(T5 모델에 유용)"})  
     
-    preprocessing_num_workers: int = field(
+    preprocessing_num_workers: Optional[int] = field(
         default=cfg.arg.preprocessing_num_workers, 
         metadata={"help": "전처리에 사용할 process 수"})  
 
-    max_train_samples: int = field(
+    max_train_samples: Optional[int] = field(
         default=cfg.arg.max_train_samples, 
         metadata={"help": "For debugging purposes or quicker training, truncate the number of training examples to this "
                 "value if set."})  
         
-    max_target_length: int = field(
+    max_target_length: Optional[int] = field(
         default=cfg.arg.max_target_length, 
         metadata={"help": "tokenization 이후 target text의 최대 총 sequence length. 이 값보다 긴 sequence는 잘리고 짧은 sequence는 padding된다."})  
 
-    val_max_target_length: int = field(
+    val_max_target_length: Optional[int] = field(
         default=cfg.arg.val_max_target_length, 
         metadata={"help": "tokenization 이후 valid target text의 최대 총 sequence length. 이 값보다 긴 sequence는 잘리고 짧은 sequence는 padding된다."
         "기v본 값은 'max_target_length'이다. 이 arg에 값을 주면, 'eval', 'predict'에서 사용되는 'model.generate'의 'max_length'를 재정의하는데 사용된다."})
     
-    max_eval_samples: int = field(
+    max_eval_samples: Optional[int] = field(
         default=cfg.arg.max_eval_samples, 
         metadata={"help": "For debugging purposes or quicker training, truncate the number of evaluation examples to this "
                 "value if set."})
 
-    num_beams: int = field(
+    num_beams: Optional[int] = field(
         default=cfg.arg.num_beams, 
         metadata={"help": "eval에서 사용할 beam의 개수. 이 인수는 'eval', 'predict' 중에서 'model.generate'로 전달된다."}) 
 
-    pad_to_max_length: str = field(
+    pad_to_max_length: bool = field(
         default=cfg.arg.pad_to_max_length, 
         metadata={"help": "True로 설정하면, 모든 sample들을 'max_length'로 padding한다. dynamic padding이 사용된다."}) 
 
     resize_position_embeddings: Optional[bool] = field(
         default=cfg.arg.resize_position_embeddings, 
         metadata={"help": "Whether to automatically resize the position embeddings if `max_source_length` exceeds "
-                "the model's position embeddings."})         
+                "the model's position embeddings."})     
+
+    cache_dir: Optional[str] = field(
+        default=cfg.data.cache_dir,
+        metadata={"help": "Where to store the pretrained models downloaded from huggingface.co"},)                    
     
 
 @dataclass

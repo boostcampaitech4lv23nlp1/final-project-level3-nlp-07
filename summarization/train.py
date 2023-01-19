@@ -38,14 +38,14 @@ def train():
     model, tokenizer = load_model_tokenizer(logger)
     model.to(device)
 
-    if train_args.do_train:
+    if train_args.args.do_train:
         if "train" not in raw_datasets:
             raise ValueError("--do_train requires a train dataset")
         train_dataset = raw_datasets["train"]
         if args.max_train_samples is not None:
             max_train_samples = min(len(train_dataset), args.max_train_samples)
             train_dataset = train_dataset.select(range(max_train_samples))
-        with train_args.main_process_first(desc="train dataset map pre-processing"):
+        with train_args.args.main_process_first(desc="train dataset map pre-processing"):
             train_dataset = train_dataset.map(
                 preprocess_function,
                 batched=True,
@@ -54,7 +54,7 @@ def train():
                 desc="Running tokenizer on train dataset",
             )
 
-    if train_args.do_eval:
+    if train_args.args.do_eval:
         max_target_length = args.val_max_target_length
         if "validation" not in raw_datasets:
             raise ValueError("--do_eval requires a validation dataset")
@@ -62,7 +62,7 @@ def train():
         if args.max_eval_samples is not None:
             args.max_eval_samples = min(len(eval_dataset), args.max_eval_samples)
             eval_dataset = eval_dataset.select(range(args.max_eval_samples))
-        with train_args.main_process_first(desc="validation dataset map pre-processing"):
+        with train_args.args.main_process_first(desc="validation dataset map pre-processing"):
             eval_dataset = eval_dataset.map(
                 preprocess_function,
                 batched=True,
@@ -77,25 +77,25 @@ def train():
         tokenizer,
         model=model,
         label_pad_token_id=label_pad_token_id,
-        pad_to_multiple_of=8 if train_args.fp16 else None,
+        pad_to_multiple_of=8 if train_args.args.fp16 else None,
     )
     
     # Initialize our Trainer
     trainer = Seq2SeqTrainer(
         model=model,
-        args=train_args,
-        train_dataset=train_dataset if train_args.do_train else None,
-        eval_dataset=eval_dataset if train_args.do_eval else None,
+        args=train_args.args,
+        train_dataset=train_dataset if train_args.args.do_train else None,
+        eval_dataset=eval_dataset if train_args.args.do_eval else None,
         tokenizer=tokenizer,
         data_collator=data_collator,
-        compute_metrics=compute_metrics if train_args.predict_with_generate else None,
+        compute_metrics=compute_metrics if train_args.args.predict_with_generate else None,
     )
 
     # Training
-    if train_args.do_train:
+    if train_args.args.do_train:
         checkpoint = None
-        if train_args.resume_from_checkpoint is not None:
-            checkpoint = train_args.resume_from_checkpoint
+        if train_args.args.resume_from_checkpoint is not None:
+            checkpoint = train_args.args.resume_from_checkpoint
         elif last_checkpoint is not None:
             checkpoint = last_checkpoint
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
@@ -114,12 +114,12 @@ def train():
     # Evaluation
     results = {}
     max_length = (
-        train_args.generation_max_length
-        if train_args.generation_max_length is not None
+        train_args.args.generation_max_length
+        if train_args.args.generation_max_length is not None
         else args.val_max_target_length
     )
-    num_beams = args.num_beams if args.num_beams is not None else train_args.generation_num_beams
-    if train_args.do_eval:
+    num_beams = args.num_beams if args.num_beams is not None else train_args.args.generation_num_beams
+    if train_args.args.do_eval:
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate(max_length=max_length, num_beams=num_beams, metric_key_prefix="eval")
         max_eval_samples = args.max_eval_samples if args.max_eval_samples is not None else len(eval_dataset)
@@ -129,7 +129,7 @@ def train():
         trainer.save_metrics("eval", metrics)
 
     kwargs = {"finetuned_from": cfg.model.model_name_or_path, "tasks": "summarization"}
-    if train_args.push_to_hub:
+    if train_args.args.push_to_hub:
         trainer.push_to_hub(**kwargs)
     else:
         trainer.create_model_card(**kwargs)
