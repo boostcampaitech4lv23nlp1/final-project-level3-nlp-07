@@ -1,8 +1,8 @@
 data:
-    dataset_name: cnn_dailymail
-    dataset_config_name: 3.0.0
-    train_file: 
-    validation_file: 
+    dataset_name: #cnn_dailymail
+    dataset_config_name: #3.0.0
+    train_file: /opt/ml/input/summarization_data/train/시사교육.json
+    validation_file: /opt/ml/input/summarization_data/valid/시사교육.json
     overwrite_cache: False
     text_column:
     summary_column:
@@ -11,7 +11,7 @@ data:
     resume_from_checkpoint:
 
 model:
-    model_name_or_path: t5-small
+    model_name_or_path: gogamza/kobart-base-v2
     use_slow_tokenizer: False
 
 train:
