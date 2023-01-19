@@ -2,15 +2,18 @@ import argparse
 from transformers import BertTokenizer
 import re
 import torch
+import os
 # from keras.preprocessing.sequence import pad_sequences
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from transformers import BertForNextSentencePrediction, AdamW, BertConfig, AutoTokenizer, DataCollatorWithPadding
-from sklearn.model_selection import train_test_split
+from torch import optim
+from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from transformers import get_linear_schedule_with_warmup
 import torch.nn as nn
 import pandas as pd
 from tqdm.auto import tqdm
-from load_dataset import DTSDataset
+from load_dataset import DTSDataset,trainDataset
+from collections import OrderedDict
 
 def MarginRankingLoss(p_scores, n_scores):
     margin = 1
@@ -22,18 +25,27 @@ def MarginRankingLoss(p_scores, n_scores):
 device = 0
 # Load the BERT tokenizer.
 print('Loading BERT tokenizer...')
-coherence_prediction_decoder = []
-coherence_prediction_decoder.append(nn.Linear(768, 768))
-coherence_prediction_decoder.append(nn.ReLU())
-coherence_prediction_decoder.append(nn.Dropout(p=0.1))
-coherence_prediction_decoder.append(nn.Linear(768, 2)) # label : 2개 positive, negtive
-coherence_prediction_decoder = nn.Sequential(*coherence_prediction_decoder)
-coherence_prediction_decoder.to(device)
+class CSModel(nn.Module):
+    def __init__(self) -> None:
+        super(CSModel, self).__init__()
+        self.model = nn.Sequential(OrderedDict({'Linear' : nn.Linear(768, 768),
+                                        'Active_fn' : nn.ReLU(),
+                                        'Dropout' : nn.Dropout(p=0.1),
+                                        'cls_layer' : nn.Linear(768, 2)}))
+    def forward(self,input):
+        output = self.model(input)
+        return output
+# coherence_prediction_decoder = []
+# coherence_prediction_decoder.append(nn.Linear(768, 768))
+# coherence_prediction_decoder.append(nn.ReLU())
+# coherence_prediction_decoder.append(nn.Dropout(p=0.1))
+# coherence_prediction_decoder.append(nn.Linear(768, 2)) # label : 2개 positive, negtive
+# coherence_prediction_decoder = nn.Sequential(*coherence_prediction_decoder)
+coherence_prediction_decoder = CSModel().to(device)
 
 tokenizer = AutoTokenizer.from_pretrained('klue/bert-base', do_lower_case=True)
 model = BertForNextSentencePrediction.from_pretrained("klue/bert-base", num_labels = 2, output_attentions = False, output_hidden_states = True)
 model.cuda(device)
-optimizer = AdamW(list(model.parameters())+list(coherence_prediction_decoder.parameters()), lr = 2e-5, eps = 1e-8)
 
 sample_num_memory = []
 id_inputs = []
@@ -43,47 +55,17 @@ id_inputs = []
 #     line = line.strip()
 #     sample_num_memory.append(int(line))
 
-PATH = '/opt/ml/input/data/poc/KakaoTalk_Chat_IT개발자 구직:채용 정보교류방 (비번 2186)_2023-01-11-12-07-28.csv'
+PATH = '/opt/ml/input/data/dialouge/train.csv'
 df = pd.read_csv(PATH)
 
-print('The group number is: '+ str(len(df)))
 # generate pos/neg pairs ....
+print('The group number is: '+ str(len(df)))
 print('start generating pos and neg pairs ... ')
-# def collate_fn(batch):
-#     print('batch', batch)
-#     data_collator = DataCollatorWithPadding(tokenizer,padding=True, pad_to_multiple_of=8)
-#     # pos_ids, neg_ids = item['input_ids'] for item in batch
-#     pos_mask, neg_mask = batch['attention_mask']
-#     labels = batch['label']
-#     pos_ids = data_collator({'input_ids': pos_ids})['input_ids']
-#     neg_ids = data_collator({'input_ids': neg_ids})['input_ids']
+train_inputs = df
+validation_inputs = pd.read_csv('/opt/ml/input/data/dialouge/valid.csv')
 
-#     return {'input_ids' : [pos_ids, neg_ids],
-#                 'attention_mask' : [pos_mask,neg_mask],
-#                 'label' : labels}
-####################### 여기부터 미완 ###################################
-# TODO : Sampling 방법 고안해보기
-# 
-# pos_neg_pairs = []; pos_neg_masks = []
-# for i in range(len(dataset)):
-#     if len(dataset[i]) == 2:
-#         pos_neg_pairs.append(dataset[i])
-#         pos_neg_masks.append(dataset[i])
-#     else:
-#         pos_neg_pairs.append([dataset[i][0], dataset[i][1]])
-#         pos_neg_pairs.append([dataset[i][0], dataset[i][2]])
-#         pos_neg_pairs.append([dataset[i][1], dataset[i][2]])
-#         pos_neg_masks.append([dataset[i][0], dataset[i][1]])
-#         pos_neg_masks.append([dataset[i][0], dataset[i][2]])
-#         pos_neg_masks.append([dataset[i][1], dataset[i][2]])
-
-# print('there are '+str(len(pos_neg_pairs))+' samples been generated...')
-fake_labels = [0]*len(df)
-
-train_inputs, validation_inputs, train_labels, validation_labels = train_test_split(df, fake_labels, random_state=42, test_size=0.8)
-# Do the same for the masks.
-train_dataset = DTSDataset(train_inputs,tokenizer)
-valid_dataset = DTSDataset(validation_inputs,tokenizer)
+train_dataset = trainDataset(train_inputs,tokenizer)
+valid_dataset = trainDataset(validation_inputs,tokenizer)
 print(f'train_len : {len(train_dataset)}, valid_len : {len(valid_dataset)} now loading ...')
 data_collator = DataCollatorWithPadding(tokenizer,padding=True, pad_to_multiple_of=8)
 batch_size = 16
@@ -99,8 +81,15 @@ epochs = 10
 # Total number of training steps is number of batches * number of epochs.
 total_steps = len(train_dataloader) * epochs
 # Create the learning rate scheduler.
-scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps = 0, num_training_steps = total_steps)
-
+optimizer = optim.AdamW([
+            {'params': model.parameters()},
+            {'params': coherence_prediction_decoder.parameters(), 'lr': 5e-5},
+                ], lr=2e-5,eps = 1e-8)
+scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=1000, T_mult=3, eta_min=1e-7)
+# optimizer = AdamW(list(model.parameters())+list(coherence_prediction_decoder.parameters()), lr = 2e-5, eps = 1e-8)
+# scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps = 0, num_training_steps = total_steps)
+print(f'Total len for training set {len(train_dataloader)}')
+print(f'Total len for validation set {len(validation_dataloader)}')
 
 for epoch_i in range(0, epochs):
 
@@ -180,8 +169,6 @@ for epoch_i in range(0, epochs):
             neg_scores = model(input_ids =neg_input_ids, attention_mask=neg_input_mask).hidden_states[0]
             neg_scores = neg_scores[:,0,:]
             neg_scores = coherence_prediction_decoder(neg_scores)
-        #all_pos_scores += pos_scores[0][:,0].detach().cpu().numpy().tolist()
-        #all_neg_scores += neg_scores[0][:,0].detach().cpu().numpy().tolist()
         all_pos_scores += pos_scores[:,0].detach().cpu().numpy().tolist()
         all_neg_scores += neg_scores[:,0].detach().cpu().numpy().tolist()
 
@@ -195,9 +182,18 @@ for epoch_i in range(0, epochs):
 
     print('label must be',sum(labels)/float(len(all_pos_scores)))
 
-    '''
-    PATH = '/scratch/linzi/bert_'+str(epoch_i)
-    torch.save(model.state_dict(), PATH)
-    '''
-    #model.save_pretrained('/scratch/linzi/bert_'+str(epoch_i)+'/')
-    #tokenizer.save_pretrained('/scratch/linzi/bert_'+str(epoch_i)+'/')
+
+    # PATH = '/scratch/linzi/bert_'+str(epoch_i)
+    # torch.save(model.state_dict(), PATH)
+    model.save_pretrained('/opt/ml/input/poc/bert_'+str(epoch_i)+'/')
+# PATH_PLM = '/opt/ml/input/poc/BERT/BERT.pt'
+# PATH_CS = '/opt/ml/input/poc/CS/CS.pt'
+# if os.path.isdir(PATH_PLM) == False:
+#     os.mkdir(PATH_PLM)
+# if os.path.isdir(PATH_CS) == False:
+#     os.mkdir(PATH_CS)
+
+# torch.save(model.state_dict(), PATH_PLM)
+# torch.save(coherence_prediction_decoder.state_dict(),PATH_CS)
+#model.save_pretrained('/scratch/linzi/bert_'+str(epoch_i)+'/')
+#tokenizer.save_pretrained('/scratch/linzi/bert_'+str(epoch_i)+'/')
