@@ -1,10 +1,12 @@
 import pandas as pd
 import re
+from pykospacing import Spacing
+from hanspell import spell_checker
 
-path ="/opt/ml/final-project-level3-nlp-07/preprocess/data/data/"                                                # 파일의 폴더 경로
-output_path = "/opt/ml/final-project-level3-nlp-07/preprocess/data/train_output/"
+path = "경로 입력 필요"                                                # 파일의 폴더 경로
+output_path = "경로 입력 필요"
 
-df = pd.read_csv(path + "train_DTS1.csv")                         # csv 파일 DataFrame으로 불러오기
+df = pd.read_csv(path + "파일 이름")                         # csv 파일 DataFrame으로 불러오기
 hate_df = pd.read_csv(path + "hate_data.csv")
 hate = sorted(hate_df["hate"], key=len, reverse=True)
 
@@ -91,6 +93,16 @@ def same(df):                                                   # 한 사람이 
 
     return df
 
+# def pyko(dialog):                                             # 맞춤법 확인 후 띄어쓰기
+
+#     dialog = spell_checker.check(dialog)
+#     dialog = dialog.checked
+
+#     dialog = "".join(dialog.split())
+#     dialog = spacing(dialog)
+
+#     return dialog
+
 """
     Date = 메시지 보낸 시간
     User = 이름
@@ -111,7 +123,9 @@ df = same(df)
 df["length"] = df["Message"].apply(useless)                     # 데이터 길이가 min_length 이상 max_length 이하 데이터만 사용
 df = df[df["length"] == True][["Date", "User", "Message", "Label"]].reset_index(drop=True)       # 모든 작업이 완료된 DataFrame
 
+df["Message"] = df["Message"].apply(pyko)
+
 print(len(df))
 
-df.to_csv(output_path + "train_normal_preprocessing.csv", index=False)
+# df.to_csv(output_path + "train.csv", index=False)
 
