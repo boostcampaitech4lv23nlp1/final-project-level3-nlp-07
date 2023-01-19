@@ -129,7 +129,8 @@ for epoch_i in range(0, epochs):
 
         #loss = MarginRankingLoss(pos_scores[0][:,0], neg_scores[0][:,0])
         loss = MarginRankingLoss(pos_scores[:,0], neg_scores[:,0])
-
+        if step % 100 == 0 and not step == 0:
+            print(f'log for loss in {step} steps : [{loss}]')
         total_loss += loss.item()
         loss.backward()
         
