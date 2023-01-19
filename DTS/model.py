@@ -15,16 +15,12 @@ from tqdm.auto import tqdm
 from load_dataset import DTSDataset,trainDataset
 from collections import OrderedDict
 import logging
+from utils import TqdmLoggingHandler
 import sys
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s -%(levelname)s - %(message)s')
-# add formatter to ch
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+logger.addHandler(TqdmLoggingHandler())
 def MarginRankingLoss(p_scores, n_scores):
     margin = 1
     scores = margin - p_scores + n_scores
