@@ -14,15 +14,25 @@ import pandas as pd
 from tqdm.auto import tqdm
 from load_dataset import DTSDataset,trainDataset
 from collections import OrderedDict
+import logging
+import sys
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s -%(levelname)s - %(message)s')
+# add formatter to ch
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 def MarginRankingLoss(p_scores, n_scores):
     margin = 1
     scores = margin - p_scores + n_scores
     scores = scores.clamp(min=0)
 
     return scores.mean()
-
-device = 0
+logger.info(f'The accuracy for this validation  :%')
+device = 'cuda:0'
 # Load the BERT tokenizer.
 print('Loading BERT tokenizer...')
 class CSModel(nn.Module):
@@ -35,12 +45,6 @@ class CSModel(nn.Module):
     def forward(self,input):
         output = self.model(input)
         return output
-# coherence_prediction_decoder = []
-# coherence_prediction_decoder.append(nn.Linear(768, 768))
-# coherence_prediction_decoder.append(nn.ReLU())
-# coherence_prediction_decoder.append(nn.Dropout(p=0.1))
-# coherence_prediction_decoder.append(nn.Linear(768, 2)) # label : 2개 positive, negtive
-# coherence_prediction_decoder = nn.Sequential(*coherence_prediction_decoder)
 coherence_prediction_decoder = CSModel().to(device)
 
 tokenizer = AutoTokenizer.from_pretrained('klue/bert-base', do_lower_case=True)
@@ -49,11 +53,6 @@ model.cuda(device)
 
 sample_num_memory = []
 id_inputs = []
-
-#for line in open('/Users/linzi/Desktop/dialogue_test/training_data/dailydial/dailydial_sample_num.txt'):
-# for line in open('/ubc/cs/research/nlp/Linzi/dailydial/dailydial_sample_num.txt'):
-#     line = line.strip()
-#     sample_num_memory.append(int(line))
 
 PATH = '/opt/ml/input/data/dialouge/train.csv'
 df = pd.read_csv(PATH)
@@ -107,7 +106,7 @@ for epoch_i in range(0, epochs):
     for step, batch in tqdm(enumerate(train_dataloader),desc = 'train_step', total = len(train_dataset)//batch_size):
 
         if step % 1000 == 0 and not step == 0:
-            print(str(step)+' steps done....')
+            logger.info(str(step)+' steps done....')
 
         pos_input_ids = batch['input_ids'].to(device)
         pos_input_mask = batch['attention_mask'].to(device)
@@ -130,7 +129,7 @@ for epoch_i in range(0, epochs):
         #loss = MarginRankingLoss(pos_scores[0][:,0], neg_scores[0][:,0])
         loss = MarginRankingLoss(pos_scores[:,0], neg_scores[:,0])
         if step % 100 == 0 and not step == 0:
-            print(f'log for loss in {step} steps : [{loss}]')
+            logger.info(f'log for loss in {step} steps : [{loss}]')
         total_loss += loss.item()
         loss.backward()
         
@@ -139,7 +138,7 @@ for epoch_i in range(0, epochs):
         scheduler.step()
 
     avg_train_loss = total_loss / len(train_dataloader)
-    print('=========== the loss for epoch '+str(epoch_i)+' is: '+str(avg_train_loss))
+    logger.info('=========== the loss for epoch '+str(epoch_i)+' is: '+str(avg_train_loss))
 
     print("")
     print("Running Validation...")
@@ -153,7 +152,7 @@ for epoch_i in range(0, epochs):
     for step, batch in tqdm(enumerate(validation_dataloader),desc = 'validation_step',total = len(valid_dataset)//batch_size):
 
         if step % 1000 == 0 and not step == 0:
-            print(str(step)+' steps done....')
+            logging.info(str(step)+' steps done....')
 
         pos_input_ids = batch['input_ids'].to(device)
         pos_input_mask = batch['attention_mask'].to(device)
@@ -180,9 +179,7 @@ for epoch_i in range(0, epochs):
             labels.append(1)
         else:
             labels.append(0)
-
-    print('label must be',sum(labels)/float(len(all_pos_scores)))
-
+    logger.info(f'The accuracy for this validation  : {round(sum(labels)/len(labels),2)*100}%')
 
     # PATH = '/scratch/linzi/bert_'+str(epoch_i)
     # torch.save(model.state_dict(), PATH)
