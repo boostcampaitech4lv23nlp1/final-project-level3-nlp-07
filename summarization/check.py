@@ -23,15 +23,8 @@ def check():
             nltk.download("punkt", quiet=True)
 
     # Sanity checks
-    if cfg.data.dataset_name is None and cfg.data.train_file is None and cfg.data.validation_file is None:
+    if cfg.data.finetuning_dataset is None:
         raise ValueError("Need either a dataset name or a training/validation file.")
-    else:
-        if cfg.data.train_file is not None:
-            extension = cfg.data.train_file.split(".")[-1]
-            assert extension in ["csv", "json"], "`train_file` should be a csv or a json file."
-        if cfg.data.validation_file is not None:
-            extension = cfg.data.validation_file.split(".")[-1]
-            assert extension in ["csv", "json"], "`validation_file` should be a csv or a json file."
 
     if cfg.huggingface.push_to_hub:
         assert cfg.data.output_dir is not None, "Need an `output_dir` to create a repo when `--push_to_hub` is passed."
