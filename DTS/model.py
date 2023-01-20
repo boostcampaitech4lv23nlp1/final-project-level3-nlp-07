@@ -5,7 +5,7 @@ import torch
 import os
 # from keras.preprocessing.sequence import pad_sequences
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
-from transformers import BertForNextSentencePrediction, AdamW, BertConfig, AutoTokenizer, DataCollatorWithPadding
+from transformers import BertForNextSentencePrediction, AdamW, BertConfig, AutoTokenizer, DataCollatorWithPadding,AutoModel
 from torch import optim
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from transformers import get_linear_schedule_with_warmup
@@ -85,7 +85,8 @@ scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=1000, T_mult=3, eta_min=1
 # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps = 0, num_training_steps = total_steps)
 print(f'Total len for training set {len(train_dataloader)}')
 print(f'Total len for validation set {len(validation_dataloader)}')
-
+min_loss = []
+max_acc = []
 for epoch_i in range(0, epochs):
 
     total_loss = 0
@@ -124,7 +125,7 @@ for epoch_i in range(0, epochs):
 
         #loss = MarginRankingLoss(pos_scores[0][:,0], neg_scores[0][:,0])
         loss = MarginRankingLoss(pos_scores[:,0], neg_scores[:,0])
-        if step % 100 == 0 and not step == 0:
+        if step % 200 == 0 and not step == 0:
             logger.info(f'log for loss in {step} steps : [{loss}]')
         total_loss += loss.item()
         loss.backward()
@@ -135,7 +136,7 @@ for epoch_i in range(0, epochs):
 
     avg_train_loss = total_loss / len(train_dataloader)
     logger.info('=========== the loss for epoch '+str(epoch_i)+' is: '+str(avg_train_loss))
-
+    min_loss.append(avg_train_loss)
     print("")
     print("Running Validation...")
 
@@ -175,11 +176,15 @@ for epoch_i in range(0, epochs):
             labels.append(1)
         else:
             labels.append(0)
-    logger.info(f'The accuracy for this validation  : {round(sum(labels)/len(labels),2)*100}%')
+    logger.info(f'The accuracy for this validation  : {sum(labels)/len(labels)*100}%')
+    max_acc.append(sum(labels)/len(labels)*100)
 
     # PATH = '/scratch/linzi/bert_'+str(epoch_i)
     # torch.save(model.state_dict(), PATH)
-    model.save_pretrained('/opt/ml/input/poc/bert_'+str(epoch_i)+'/')
+    model.save_pretrained('/opt/ml/input/poc/BERT/bert_'+str(epoch_i + 1)+'/')
+    torch.save(coherence_prediction_decoder.state_dict(),'/opt/ml/input/poc/CS/cs' + str(epoch_i +1) + '.pt')
+logger.info(f'training is finished and there is min_loss happend in {min_loss.index(min(min_loss)) + 1} epochs')
+logger.info(f'training is finished and there is max_acc happend in {max_acc.index(min(max_acc)) + 1} epochs')
 # PATH_PLM = '/opt/ml/input/poc/BERT/BERT.pt'
 # PATH_CS = '/opt/ml/input/poc/CS/CS.pt'
 # if os.path.isdir(PATH_PLM) == False:
