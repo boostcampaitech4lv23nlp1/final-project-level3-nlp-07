@@ -13,7 +13,7 @@ arg:
     ignore_pad_token_for_loss: True
     pad_to_max_length: True
     max_source_length: 512
-    max_target_length: 128
+    max_target_length: 512
     source_prefix: None
     preprocessing_num_workers: # None    
     max_train_samples: # None
@@ -26,14 +26,14 @@ train:
     seed: 42
     per_device_train_batch_size: 32
     per_device_eval_batch_size: 32
-    gradient_accumulation_steps: 1
+    gradient_accumulation_steps: 2
     learning_rate: 5e-5
     num_train_epochs: 3
     weight_decay: 0.01
     label_smoothing_factor: 0.01
-    logging_steps: 150
-    eval_steps: 300
-    save_steps: 600
+    logging_steps: 500
+    eval_steps: 4000
+    save_steps: 4000
     overwrite_output_dir: False
 
 huggingface:
@@ -43,6 +43,6 @@ huggingface:
 
 wandb:
     wandb_mode: False
-    entity: final_bora
+    entity: final-bora
     projcet_name: test
     exp_name: test
