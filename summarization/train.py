@@ -10,6 +10,7 @@ from process_text import preprocess_function
 from metrics import compute_metrics
 
 import torch
+import wandb
 
 
 def train():
@@ -137,4 +138,9 @@ def train():
     return results
 
 if __name__ == "__main__":
-    train()
+    if cfg.wandb.wandb_mode:
+        wandb.init(project=cfg.wandb.project_name, entity=cfg.wandb.entity, name=cfg.wandb.exp_name)
+        train()
+        wandb.finish()
+    else:
+        train()

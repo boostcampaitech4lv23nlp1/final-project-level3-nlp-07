@@ -1,6 +1,6 @@
 data:
     finetuning_dataset: /opt/ml/input/summarization_data/
-    overwrite_cache: False
+    overwrite_cache: True
     output_dir: ./models/test
     resume_from_checkpoint: None
     cache_dir: 
@@ -44,5 +44,5 @@ huggingface:
 wandb:
     wandb_mode: False
     entity: final-bora
-    projcet_name: test
+    project_name: test
     exp_name: test
