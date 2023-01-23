@@ -185,14 +185,3 @@ for epoch_i in range(0, epochs):
     torch.save(coherence_prediction_decoder.state_dict(),'/opt/ml/input/poc/CS/cs' + str(epoch_i +1) + '.pt')
 logger.info(f'training is finished and there is min_loss happend in {min_loss.index(min(min_loss)) + 1} epochs')
 logger.info(f'training is finished and there is max_acc happend in {max_acc.index(min(max_acc)) + 1} epochs')
-# PATH_PLM = '/opt/ml/input/poc/BERT/BERT.pt'
-# PATH_CS = '/opt/ml/input/poc/CS/CS.pt'
-# if os.path.isdir(PATH_PLM) == False:
-#     os.mkdir(PATH_PLM)
-# if os.path.isdir(PATH_CS) == False:
-#     os.mkdir(PATH_CS)
-
-# torch.save(model.state_dict(), PATH_PLM)
-# torch.save(coherence_prediction_decoder.state_dict(),PATH_CS)
-#model.save_pretrained('/scratch/linzi/bert_'+str(epoch_i)+'/')
-#tokenizer.save_pretrained('/scratch/linzi/bert_'+str(epoch_i)+'/')
