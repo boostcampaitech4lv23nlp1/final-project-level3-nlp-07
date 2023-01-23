@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+
 wandb/
 models/
 *.py[cod]
@@ -135,3 +136,10 @@ dmypy.json
 .idea/
 .DS_Store
 test.ipynb
+
+# output folders
+code/outputs/
+code/wandb/
+code/models/
+opt/ml/input/code/models/
+./baseline/wandb/
