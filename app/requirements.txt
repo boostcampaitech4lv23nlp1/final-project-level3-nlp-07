@@ -4,3 +4,4 @@ streamlit==1.14.0
 streamlit-chat==0.0.2.1
 streamlit-vis-timeline==0.2.0
 fastapi>=0.89.1
+openai==0.26.1
