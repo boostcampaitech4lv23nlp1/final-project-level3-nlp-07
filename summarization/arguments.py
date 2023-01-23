@@ -119,6 +119,7 @@ class training_arg_class:
             push_to_hub=cfg.huggingface.push_to_hub,                      # huggingface hub에 model을 push할지의 여부
             hub_private_repo=cfg.huggingface.hub_private_repo,                  # huggingface hub에 private로 설정할지 여부
             hub_token=cfg.huggingface.hub_token,                         # model hub로 push하는데 사용할 토큰                      
+            push_to_hub_organization=cfg.huggingface.push_to_hub_organization,
         )
     )
 

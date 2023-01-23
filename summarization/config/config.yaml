@@ -39,7 +39,8 @@ train:
 huggingface:
     push_to_hub: False
     hub_private_repo: True
-    hub_token: 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       # 염보라 token
+    push_to_hub_organization: yeombora
+    hub_token:                                 # 본인 token
 
 wandb:
     wandb_mode: False
