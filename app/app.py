@@ -33,7 +33,7 @@ def main():
         # response = requests.post(root + 'upload', json=data)
         # response = requests.post(root + 'text', files = files)
         st.dataframe(sample)
-        return uploaded_file
+        return sample
     # TODO : file upload
     # TODO : range check 원하는 일자 -> 
     # TODO : 확인버튼
@@ -43,8 +43,8 @@ def show(upload_files,cs_model, bert_model, tokenizer,cfg):
         if 'DTS' not in st.session_state:
             with st.spinner(text='In progress'):
                 # must be fastapi
-                label = get_DTS(bert_model=bert_model, cs_model=cs_model, tokenizer=tokenizer, inputs = upload_files) 
-                items = get_timeline(upload_files, label)
+                inference_processed,label = get_DTS(bert_model=bert_model, cs_model=cs_model, tokenizer=tokenizer, inputs = upload_files) 
+                items = get_timeline(df = inference_processed, label = label, raw_df =upload_files)
                 # implement by fastapi after
                 st.session_state.DTS = True
                 st.success('Done')
@@ -86,4 +86,4 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained('klue/bert-base')
     upload_files = main()
     if upload_files:
-        show(upload_files)
+        show(upload_files,cs_model, bert_model, tokenizer,cfg)

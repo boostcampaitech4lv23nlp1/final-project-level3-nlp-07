@@ -19,22 +19,20 @@ def load_config():
     return config
 @st.cache
 def load_DTS(config) -> BertModel:
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = BertModel.from_pretrained(config.DTS.BERT_PATH).to(device)
     return model
 @st.cache
 def load_CSmodel(config) -> CSModel:
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = CSModel()
-    model.load_state_dict(torch.load(config.DTS.cs_PATH)).to(device)
+    model.load_state_dict(torch.load(config.DTS.cs_PATH))
+    model.to(device)
     return model
 
 def get_threshold(scores):
-    mu,std = torch.std_mean(scores)
-    return mu-(std/2)
+    std,mu = torch.std_mean(scores)
+    return mu-(std/1.5)
 def inference_DTS(validation_dataloader,bert_model,cs_model):
     scores = []
-    fn = nn.Softmax(dim=1)
     for step, batch in tqdm(enumerate(validation_dataloader),desc = 'inference_step',total = len(validation_dataloader)//32):
         pos_input_ids = batch['input_ids'].to(device)
         pos_input_mask = batch['attention_mask'].to(device)
@@ -42,43 +40,48 @@ def inference_DTS(validation_dataloader,bert_model,cs_model):
             pos_scores = bert_model(input_ids = pos_input_ids, attention_mask=pos_input_mask).hidden_states[0]
             pos_scores = pos_scores[:,0,:]
             pos_scores = cs_model(pos_scores)
-            pos_scores = fn(pos_scores)
+        
         scores += pos_scores[:,0] # batch argmax
+    scores = torch.sigmoid(torch.tensor(scores))
     tau = get_threshold(scores)
-    label = [ 0 if i >= tau else 1 for i in scores ]
+    scores = scores.detach().cpu().numpy().tolist()
+    label = [ 0 if i >= tau else 1 for i in scores]
     return label
 @st.cache
-def get_timeline(df,label):
+def get_timeline(df,label,raw_df):
     timeline = []
-    n_topic = sum(label)   # topic의 개수
     seg_idx = 0
-    for idx, item in df.iterrows():
+    for idx in range(len(df)):
         if label[idx] == 1 and (idx - seg_idx) >= 10 : 
-            tmp = defaultdict()
+            tmp = {}
             # label == 1 means : segmentation!
-            # idx-seg_idx 이전 분절 대비 대화의 최소 개수가 10개는 되야지 스껄
-            tmp['start'] = df['Date'].iloc[seg_idx]   # 시작 시점 표시
-            tmp['content'] = df['Date'].iloc[seg_idx]   # 시작 시점 표시
-            for i in range(seg_idx,idx):
-                tmp['dialouge'].append(df['Message'].iloc[i])
+            # idx-seg_idx 이전 분절 대비 대화의 최소 개수가 10개는 되야지
+            tmp['start'] = str(df['Date'].iloc[seg_idx])   # 시작 시점 표시
             tmp['content'] = (df['Message'].iloc[seg_idx])
-            seg_idx = idx
+            st_point = raw_df[raw_df['Date'] == str(df['Date'].iloc[seg_idx])].index.tolist()[0]
+            end_point = raw_df[raw_df['Date'] == str(df['Date'].iloc[idx])].index.tolist()[0]
+            tmp['dialouge'] =raw_df['Message'].iloc[st_point:end_point+1].tolist() # end_point까지 모집
+            seg_idx = idx +1
             timeline.append(tmp)
             # keys : id, content, start, summary, dialouge
     return timeline
+
 @st.cache
 def get_DTS(bert_model,cs_model,tokenizer,inputs):
     data_collator = DataCollatorWithPadding(tokenizer,padding=True, pad_to_multiple_of=8)
     inference_set = load_dataset.DTSDataset(inputs, tokenizer=tokenizer)
+    inference_processed = inference_set.preprocessed # 전처리 된 데이터셋만 가져온다. 
     inference_sampler = SequentialSampler(inference_set)
     inference_dataloader = DataLoader(inference_set, sampler=inference_sampler, batch_size=32,collate_fn=data_collator)
     label = inference_DTS(inference_dataloader,bert_model,cs_model)
-    return label
+    return inference_processed,label
+
 def predict_summary(config, inputs):
     openai.api_key = os.getenv("OPENAI_API_KEY")
     openai.api_key = config.summary.API_KEY
     for i in inputs:
-        i['summary'] = openai.Completion.create(
+        #i['summary'] = openai.Completion.create(
+        response = openai.Completion.create(
                     model="text-davinci-003",
                     prompt='Summarize this for a second-grade student:' + ''.join(i['dialouge']),
                     temperature=0.7,
@@ -87,4 +90,5 @@ def predict_summary(config, inputs):
                     frequency_penalty=0.0,
                     presence_penalty=0.0
                 )
+        i['summary'] = response['choices'][0]['text']
     return True
