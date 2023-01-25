@@ -1,0 +1,49 @@
+data:
+    finetuning_dataset: /opt/ml/input/summarization_data/
+    overwrite_cache: True
+    output_dir: ./models/test
+    resume_from_checkpoint: None
+    cache_dir: 
+
+model:
+    model_name_or_path: gogamza/kobart-base-v2
+    use_fast: True
+
+arg:
+    ignore_pad_token_for_loss: True
+    pad_to_max_length: True
+    max_source_length: 512
+    max_target_length: 512
+    source_prefix: None
+    preprocessing_num_workers: # None    
+    max_train_samples: # None
+    val_max_target_length: # None
+    max_eval_samples: # None
+    num_beams: # None
+    resize_position_embeddings: # None
+
+train:
+    seed: 42
+    per_device_train_batch_size: 32
+    per_device_eval_batch_size: 32
+    gradient_accumulation_steps: 2
+    learning_rate: 5e-5
+    num_train_epochs: 3
+    weight_decay: 0.01
+    label_smoothing_factor: 0.01
+    logging_steps: 500
+    eval_steps: 4000
+    save_steps: 4000
+    overwrite_output_dir: False
+
+huggingface:
+    push_to_hub: False
+    hub_private_repo: True
+    push_to_hub_organization: yeombora
+    hub_token:                                 # 본인 token
+
+wandb:
+    wandb_mode: False
+    entity: final-bora
+    project_name: test
+    exp_name: test
