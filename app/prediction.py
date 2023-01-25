@@ -2,26 +2,27 @@ from model import CSModel
 from torch import nn
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
-from transformers import Automodel, BertModel, DataCollatorWithPadding
+from transformers import BertModel, DataCollatorWithPadding
 from collections import defaultdict
 import yaml
 import streamlit as st
 import os
 from tqdm.auto import tqdm
 import openai
-from DTS import load_dataset
-from DTS import model
+import sys
+sys.path.append("../DTS") 
+from load_dataset import DTSDataset
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-@st.cache
+
 def load_config():
     with open("config.yaml") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     return config
-@st.cache
+
 def load_DTS(config) -> BertModel:
     model = BertModel.from_pretrained(config.DTS.BERT_PATH).to(device)
     return model
-@st.cache
+
 def load_CSmodel(config) -> CSModel:
     model = CSModel()
     model.load_state_dict(torch.load(config.DTS.cs_PATH))
@@ -47,7 +48,7 @@ def inference_DTS(validation_dataloader,bert_model,cs_model):
     scores = scores.detach().cpu().numpy().tolist()
     label = [ 0 if i >= tau else 1 for i in scores]
     return label
-@st.cache
+
 def get_timeline(df,label,raw_df):
     timeline = []
     seg_idx = 0
@@ -66,29 +67,27 @@ def get_timeline(df,label,raw_df):
             # keys : id, content, start, summary, dialouge
     return timeline
 
-@st.cache
+
 def get_DTS(bert_model,cs_model,tokenizer,inputs):
     data_collator = DataCollatorWithPadding(tokenizer,padding=True, pad_to_multiple_of=8)
-    inference_set = load_dataset.DTSDataset(inputs, tokenizer=tokenizer)
+    inference_set = DTSDataset(inputs, tokenizer=tokenizer)
     inference_processed = inference_set.preprocessed # 전처리 된 데이터셋만 가져온다. 
     inference_sampler = SequentialSampler(inference_set)
     inference_dataloader = DataLoader(inference_set, sampler=inference_sampler, batch_size=32,collate_fn=data_collator)
     label = inference_DTS(inference_dataloader,bert_model,cs_model)
-    return inference_processed,label
+    timeline = get_timeline(df = inference_processed,label = label,raw_df = inputs)
+    return timeline
 
-def predict_summary(config, inputs):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    openai.api_key = config.summary.API_KEY
-    for i in inputs:
-        #i['summary'] = openai.Completion.create(
-        response = openai.Completion.create(
-                    model="text-davinci-003",
-                    prompt='Summarize this for a second-grade student:' + ''.join(i['dialouge']),
-                    temperature=0.7,
-                    max_tokens=64,
-                    top_p=1.0,
-                    frequency_penalty=0.0,
-                    presence_penalty=0.0
-                )
-        i['summary'] = response['choices'][0]['text']
-    return True
+def predict_summary(inputs):
+    # openai.api_key = os.getenv("OPENAI_API_KEY")
+    # openai.api_key = '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'
+    # response = openai.Completion.create(
+    #                 model="text-davinci-003",
+    #                 prompt='Summarize this for a second-grade student:' + ''.join(inputs['dialouge']),
+    #                 temperature=0.7,
+    #                 max_tokens=128,
+    #                 top_p=1.0,
+    #                 frequency_penalty=0.0,
+    #                 presence_penalty=0.0
+    #             )
+    return f'test 입니다. {inputs["dialouge"][-9]}'
