@@ -12,7 +12,6 @@ import openai
 import sys
 sys.path.append("../DTS") # 부모 경로 추가하는 법
 from load_dataset import DTSDataset
-from transformers import pipeline
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -58,11 +57,8 @@ def inference_DTS(validation_dataloader,bert_model,cs_model):
 def get_timeline(df,label,raw_df):
     timeline = []
     seg_idx = 0
-    # keys : id, content, start, summary, dialogue
-    # label  = [0,0,0,0,0,0,0,1,0,0,0,0,0,1]
-    # for 1 ; seg_idx = 11 , idx = 23 label[idx] = 1
-    for idx in range(len(df)): # len(df) == len(label) , len(label) != len(raw_df)
-        if label[idx] == 1 and (idx - seg_idx) >= 10 : # (idx - seg_idx) >= 10 대화가 적어도 10번은 오고 가야지 짜샤
+    for idx in range(len(df)):
+        if label[idx] == 1 and (idx - seg_idx) >= 10 : 
             tmp = {}
             # label == 1 means : segmentation!
             # idx-seg_idx 이전 분절 대비 대화의 최소 개수가 10개는 되야지
@@ -72,8 +68,7 @@ def get_timeline(df,label,raw_df):
             # st_point, end_point는 raw_df 기준
             st_point = raw_df[raw_df['Date'] == str(df['Date'].iloc[seg_idx])].index.tolist()[0]
             end_point = raw_df[raw_df['Date'] == str(df['Date'].iloc[idx])].index.tolist()[0]
-            tmp['dialogue'] =raw_df['Message'].iloc[st_point:end_point+1].tolist() # end_point까지 모집
-            # tmp['USER_ID'] =raw_df['ID'].iloc[st_point:end_point+1].tolist() # end_point까지 모집
+            tmp['dialouge'] =raw_df['Message'].iloc[st_point:end_point+1].tolist() # end_point까지 모집
             seg_idx = idx +1
             timeline.append(tmp)
     return timeline
@@ -90,18 +85,16 @@ def get_DTS(bert_model,cs_model,tokenizer,inputs):
     timeline = get_timeline(df = inference_processed,label = label,raw_df = inputs)
     return timeline
 
-def timeline_to_text(timeline):
-    text = timeline['dialogue']
-    result = ""
-    for i in text:
-        if len(result) == 0:
-            result += i
-        else:
-            result += ('</s>' + i)
-    return result
-
-# 3
-def predict_summary(result):
-    generator = pipeline(model="yeombora/dialogue_summarization")
-    gen = generator(result)
-    return gen
+def predict_summary(inputs):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    openai.api_key = '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'
+    # user = inputs['USER_ID']
+    # user = inputs['dialouge']
+    # response = openai.Completion.create(
+    #                 model="text-davinci-003",
+    #                 prompt='Summarize this for a second-grade student:' + ''.join(inputs['dialouge']),
+    #                 frequency_penalty=0.0,
+    #                 presence_penalty=0.0
+    #             )
+    # 주제가 분절된 것을 기준으로 하나의 주제만 summary 한다고 보시면 됩니다!!
+    return f'test 입니다. {inputs["dialouge"][-9]}'
