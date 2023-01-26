@@ -59,8 +59,8 @@ class DTSDataset(Dataset):
         super(DTSDataset,self).__init__()
         self.tokenizer = tokenizer
         self.label = [0]*len(df)
-        # self.dataset = self._tokenizing(self.data)
-        self.dataset = self._tokenizing(self._preprocessing(df))
+        self.preprocessed = self._preprocessing(df)
+        self.dataset = self._tokenizing(self.preprocessed)
     
     def _tokenizing(self,df):
         output =[]
@@ -69,18 +69,15 @@ class DTSDataset(Dataset):
             # print(neg_idx,idx)
             # print('-'*100, type(self.data.iloc[neg_idx]['Message']), self.data.iloc[neg_idx]['Message'])
             pos_token = self.tokenizer(item['Message'],item['Message2'],add_special_tokens = True, max_length = 128, padding = 'longest',truncation = True,return_tensors = 'pt')
-            neg_token = self.tokenizer(item['Message'],df.iloc[neg_idx]['Message2'],add_special_tokens = True, max_length = 128, padding = 'max_length',truncation = True,return_tensors = 'pt')
-            output.append([pos_token,neg_token])
+            output.append(pos_token)
         return output
 
     def __len__(self):
         return len(self.dataset)
     def __getitem__(self, idx):
         # print('neg_input_ids' , self.dataset[idx][1]['input_ids'].squeeze(0))
-        return {'input_ids' : self.dataset[idx][0]['input_ids'].squeeze(0),
-                 'attention_mask' : self.dataset[idx][0]['attention_mask'].squeeze(0),
-                'neg_input_ids' : self.dataset[idx][1]['input_ids'].squeeze(0),
-                 'neg_attention_mask' : self.dataset[idx][1]['attention_mask'].squeeze(0),
+        return {'input_ids' : self.dataset[idx]['input_ids'].squeeze(0),
+                 'attention_mask' : self.dataset[idx]['attention_mask'].squeeze(0),
                  'label' : torch.tensor(self.label[idx])}
         # return {'input_ids' : [self.dataset[idx][0]['input_ids'].squeeze(0),self.dataset[idx][1]['input_ids'].squeeze(0)],
         #          'attention_mask' : [self.dataset[idx][0]['attention_mask'].squeeze(0),self.dataset[idx][1]['attention_mask'].squeeze(0)],
