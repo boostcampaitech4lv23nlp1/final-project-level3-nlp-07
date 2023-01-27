@@ -54,7 +54,7 @@ def sample(new_df,PATH):
     tmp.to_csv(PATH,index=False)
 
 if __name__ == '__main__':
-    v_PATH = '/opt/ml/input/data/dialouge/valid.csv'
+    v_PATH = '/opt/ml/input/data/dialogue/valid.csv'
     path = '/opt/ml/input/poc/valid (1).csv'
     print('now valid')
     df = prepare_df(load_df(path))
