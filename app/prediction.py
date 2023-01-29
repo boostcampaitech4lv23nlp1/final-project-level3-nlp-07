@@ -10,6 +10,8 @@ import os
 from tqdm.auto import tqdm
 import openai
 import collections
+from nltk.tag import pos_tag
+from nltk.tokenize import word_tokenize
 import sys
 sys.path.append("../DTS") # 부모 경로 추가하는 법
 from load_dataset import DTSDataset
@@ -57,11 +59,18 @@ def inference_DTS(validation_dataloader,bert_model,cs_model):
 
 # dialogue에서 keyword 뽑아주는 부분
 def keyword_extractor(dialogue):
-    # 두음절 이상만 뽑아보기
-    to_keywords = [i for i in ' '.join(dialogue).split() if len(i)>1]
-    # TODO : keyword 정제하기 (형태소 기반, 빈도수 기반)
-    # nltk 설치 완료 후에 진행할 부분
+    # nltk로 명사군의 단어들만 뽑아보기
+    try:
+        word_tokenize('Hello nltk')
+        print('nltk requirement fulfilled')
+    except:
+        import nltk
+        nltk.download('averaged_preceptron_tagger')
+        print('nltk averaged_preceptron_tagger downloaded')
+    to_keywords = [i for i,p in pos_tag(word_tokenize(' '.join(dialogue))) \
+                                                    if len(i)>1 and p[:2]=='NN' and i !='..']
     keyword, freq = collections.Counter(to_keywords).most_common(1)[0]
+    # TODO : 다른 키워드 처리 방법 찾아보기
     return keyword
 
 def get_timeline(df,label,raw_df):
@@ -73,12 +82,10 @@ def get_timeline(df,label,raw_df):
         if label[idx] == 1 and (idx - seg_idx) >= 10 : 
             tmp = {}
             tmp['start'] = str(df.loc[seg_idx,'Date'])   # 시작 시점 표시
+            tmp['due'] = str(df.loc[idx,'Date'])
             tmp['content'] = keyword_extractor(df.loc[seg_idx:idx,'Message'])
             # 전처리 이전 데이터로 메세지를 모아서 보기 위함
-            # st_point, end_point는 raw_df 기준
-            st_point = raw_df[raw_df['Date'] == str(df.loc[seg_idx,'Date'])].index.tolist()[0]
-            end_point = raw_df[raw_df['Date'] == str(df.loc[idx,'Date'])].index.tolist()[0]
-            tmp['dialogue'] =raw_df.loc[st_point:end_point+1,'Message'].tolist() # end_point까지 모집
+            tmp['dialogue'] =raw_df.loc[df.loc[seg_idx,'index']:df.loc[idx,'index'], 'Message'].tolist()
             seg_idx = idx +1
             timeline.append(tmp)
     return timeline
