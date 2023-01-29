@@ -2,6 +2,7 @@ from arguments import args, train_args
 from model import load_model_tokenizer
 from logger import set_logging
 from transformers import  PreTrainedTokenizerFast
+from torch.utils.data import DataLoader
 import nltk
 
 # Get the column names for input/target.
@@ -12,6 +13,9 @@ prefix = args.source_prefix if args.source_prefix is not None else ""
 
 logger = set_logging('train')
 model, tokenizer = load_model_tokenizer(logger)
+
+bos = tokenizer.bos_token
+eos = tokenizer.eos_token
 
 # Temporarily set max_target_length for training.
 max_target_length = args.max_target_length
@@ -30,7 +34,7 @@ def preprocess_function(dataset):
         if dataset[text_column][i] and dataset[summary_column][i]:
             inputs.append(dataset[text_column][i])
             targets.append(dataset[summary_column][i])
-    inputs = [prefix + inp for inp in inputs]
+    inputs = [bos + inp + eos for inp in inputs]
 
     model_inputs = tokenizer(inputs, max_length=args.max_target_length, padding=padding, truncation=True)
     # Tokenize targets with the `text_target` keyword argument

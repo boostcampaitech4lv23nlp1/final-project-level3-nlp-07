@@ -18,6 +18,10 @@ class Arguments:
     model_name_or_path: str = field(
         default=cfg.model.model_name_or_path, 
         metadata={"help": "huggingface에서 가져올 PLM"}) 
+
+    roberta_model: str = field(
+        default=cfg.model.roberta_path,
+        metadata={"help": "huggingface에서 가져올 PLM"})
  
     use_fast: bool = field(
         default=cfg.model.use_fast, 

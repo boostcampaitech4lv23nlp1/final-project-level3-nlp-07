@@ -1,0 +1,28 @@
+diff --git a/summarization/arguments.py b/summarization/arguments.py
+index 858fea0..1563972 100644
+--- a/summarization/arguments.py
++++ b/summarization/arguments.py
+@@ -115,7 +115,7 @@ class training_arg_class:
+             save_strategy="steps",
+             save_steps=cfg.train.save_steps,
+             weight_decay=cfg.train.weight_decay,                      # 사용할 weight decay
+-            report_to=all,                          # 결과 및 로그를 보고할 통합 목록. 지원되는 플랫폼은 "azure_ml", "comet_ml", "mlflow", "neptune", "tensorboard", "clearl", "wandb"       
++            report_to=["wandb"],                          # 결과 및 로그를 보고할 통합 목록. 지원되는 플랫폼은 "azure_ml", "comet_ml", "mlflow", "neptune", "tensorboard", "clearl", "wandb"       
+             push_to_hub=cfg.huggingface.push_to_hub,                      # huggingface hub에 model을 push할지의 여부
+             hub_private_repo=cfg.huggingface.hub_private_repo,                  # huggingface hub에 private로 설정할지 여부
+             hub_token=cfg.huggingface.hub_token,                         # model hub로 push하는데 사용할 토큰                      
+diff --git a/summarization/config/config.yaml b/summarization/config/config.yaml
+index fd5cb3d..36b35e5 100644
+--- a/summarization/config/config.yaml
++++ b/summarization/config/config.yaml
+@@ -31,8 +31,8 @@ train:
+     num_train_epochs: 3
+     weight_decay: 0.01
+     label_smoothing_factor: 0.01
+-    logging_steps: 150
+-    eval_steps: 300
++    logging_steps: 10
++    eval_steps: 10
+     save_steps: 600
+     overwrite_output_dir: False
+ 

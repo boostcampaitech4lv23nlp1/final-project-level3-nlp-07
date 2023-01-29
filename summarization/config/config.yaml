@@ -6,7 +6,9 @@ data:
     cache_dir: 
 
 model:
-    model_name_or_path: gogamza/kobart-base-v2
+    # model_name_or_path: gogamza/kobart-base-v2
+    model_name_or_path : yeombora/dialogue_summarization
+    roberta_path : klue/roberta-base
     use_fast: True
 
 arg:
@@ -21,6 +23,7 @@ arg:
     max_eval_samples: # None
     num_beams: # None
     resize_position_embeddings: # None
+
 
 train:
     seed: 42
