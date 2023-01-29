@@ -2,21 +2,19 @@ import streamlit as st
 from streamlit_timeline import st_timeline
 from streamlit_chat import message
 import pandas as pd
-from omegaconf import OmegaConf
 import requests
-import time
 import re
 import chardet
-import argparse
-from transformers import AutoTokenizer
-from functools import partial
-from datetime import datetime, timedelta
+from datetime import timedelta
 from prediction import *
+import bentoml
 
 
 st.set_page_config(layout="wide")
 
 root = 'http://0.0.0.0:8001/'
+bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230129175416_E78DE5'
+bento_svc = bentoml.load(bentoml_path)
 
 def get_now(start_date, time_period, df):    
     df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)
@@ -60,15 +58,6 @@ def form_return(uploaded_file, start_date, time_period):
     sample = get_now(start_date,time_period, df)   # data 크기 감소
     return sample
 
-@st.cache()
-def load_models():
-    parsers = argparse.ArgumentParser()
-    parsers.add_argument('--config', type=str, default='config')
-    args, _ = parsers.parse_known_args()
-    cfg = OmegaConf.load(f'./{args.config}.yaml')
-    cs_model = load_CSmodel(cfg)
-    bert_model = load_DTS(cfg)
-    return cs_model, bert_model, cfg
 
 if __name__ == '__main__':
     st.title("Open Talk Demo")
@@ -80,15 +69,12 @@ if __name__ == '__main__':
         submit = st.form_submit_button(label='Submit') # True or False
     # items = []
     if submit:
-        cs_model, bert_model, cfg = load_models()
         # tokenizer의 경우 hash가 불가했음, unknown object type
-        tokenizer = AutoTokenizer.from_pretrained('klue/bert-base')
         sample = form_return(uploaded_file, start_date, time_period)
         if len(sample) <100:
             st.warning('Too Small data to summary... please update time_period and start_date')
         with st.spinner('get_DTS..'): # with 아래 까지 실행되는 동안 동그라미를 띄운다.
-            # api로 날릴수 있는 부분 -> backend에 요청할 부분!
-            items = get_DTS(bert_model=bert_model,cs_model=cs_model,tokenizer=tokenizer,inputs = sample) #pandas
+            items = bento_svc.dts(sample)
             st.success('Done...') #질문!
             if 'items' not in st.session_state: 
                 # dict key value -> 선언을 하게 되면 로컬변수가 아니라 캐시로 저장을 하게 됩니다.
@@ -104,10 +90,10 @@ if __name__ == '__main__':
         #     st.warning("items not available")
         if timeline is not None:
             with st.spinner('get_summary..'):
-                sums = predict_summary(inputs = timeline) #전체를 하는게 아니라 하나만!
+                response = bento_svc.summarization(timeline)
                 tab1, tab2 = st.tabs(["Summary_output", "Viz"])
                 summary = tab1.text_area('summary Output',f'''
-{sums}
+{response}
 
 YEOMbora에서는 당신의 채팅방을 더욱 원활하게 활용될 수 있도록 노력하고 있습니다. 
             '''

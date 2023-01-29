@@ -6,3 +6,4 @@ streamlit-vis-timeline==0.2.0
 fastapi>=0.89.1
 openai==0.26.1
 chardet==5.1.0
+bentoml==0.13.1
