@@ -13,7 +13,7 @@ import bentoml
 st.set_page_config(layout="wide")
 
 root = 'http://0.0.0.0:8001/'
-bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230129175416_E78DE5'
+bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230130082647_CB9E5E'
 bento_svc = bentoml.load(bentoml_path)
 
 def get_now(start_date, time_period, df):    
@@ -105,7 +105,7 @@ YOUMbora는 당신의 채팅방이 더욱 원활하게 활용될 수 있도록 �
             ,height = 300)
                 tab1.download_button('요약문 다운로드', summary)
                 tab2.markdown(f"[키워드 검색 링크](http://google.com/search?q={timeline['content']})")
-                tab2.markdown(f"[요약 검색 링크](http://google.com/search?q={sums.replace(' ','')})")
+                tab2.markdown(f"[요약 검색 링크](http://google.com/search?q={response.replace(' ','')})")
                 # tab2.download_button('Dows', summary)
             with cls[0]:
                 # TODO : html로 구현 시 bar를 넣어서 위아래로 확인할 수 있도록
