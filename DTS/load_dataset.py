@@ -74,6 +74,7 @@ class DTSDataset(Dataset):
 
     def __len__(self):
         return len(self.dataset)
+
     def __getitem__(self, idx):
         # print('neg_input_ids' , self.dataset[idx][1]['input_ids'].squeeze(0))
         return {'input_ids' : self.dataset[idx]['input_ids'].squeeze(0),
@@ -82,6 +83,7 @@ class DTSDataset(Dataset):
         # return {'input_ids' : [self.dataset[idx][0]['input_ids'].squeeze(0),self.dataset[idx][1]['input_ids'].squeeze(0)],
         #          'attention_mask' : [self.dataset[idx][0]['attention_mask'].squeeze(0),self.dataset[idx][1]['attention_mask'].squeeze(0)],
         #          'label' : torch.tensor(self.label[idx])}
+
     def _preprocessing(self,df):
         df["id_boolean"] = df["User"].apply(self.id_check)                   # 방장봇이 대화하면 제거
         df["Message"] = df["Message"].apply(self.text_replace)               # \n, 링크 전처리 작업
@@ -90,7 +92,7 @@ class DTSDataset(Dataset):
         df.reset_index(drop=True,inplace = True)
         df['Message2'] = pd.concat([df['Message'].iloc[1:],pd.Series('None')]).reset_index(drop=True)           # window 작업
         df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)                                  # date 날짜화 str -> datetime
-        df = df[["Date", "User", "Message","Message2"]]
+        df = df[["index", "Date", "User", "Message", "Message2"]]
         # df_filtered2 = df[ df['Date'].isin(pd.date_range('2022-12-16', '2022-12-17',freq = 's'))] # 원하는 일자별로 자를 수도 있음묘 
         return df
 
@@ -98,6 +100,7 @@ class DTSDataset(Dataset):
         if my_id == "방장봇":
             return False
         return True
+
     def text_processing(self,dialog):                                    # Text 전처리 작업
         find_text = re.findall('[ㄱ-ㅎㅏ-ㅣ]+', dialog)
         vowel = "".join(find_text)
@@ -117,6 +120,7 @@ class DTSDataset(Dataset):
         
 
         return True
+        
     def text_replace(self,dialog):                                       # '\n' -> ' ' , 링크 -> [LINK] 로 변경
         line = "\n"
         dialog = re.sub(pattern=line, repl =" ", string=dialog)
