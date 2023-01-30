@@ -15,6 +15,7 @@ from nltk.tokenize import word_tokenize
 import sys
 sys.path.append("../DTS") # 부모 경로 추가하는 법
 from load_dataset import DTSDataset
+from transformers import pipeline
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -39,7 +40,10 @@ def get_threshold(scores):
     return mu-(std/1.5)
 # 1
 # 배치 단위 서빙을해야한다.
-def inference_DTS(validation_dataloader,bert_model,cs_model):
+def inference_DTS(validation_dataloader, bert_model, cs_model):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    bert_model.to(device)
+    cs_model.to(device)
     scores = []
     for step, batch in tqdm(enumerate(validation_dataloader),desc = 'inference_step',total = len(validation_dataloader)//32):
         pos_input_ids = batch['input_ids'].to(device)
@@ -100,16 +104,17 @@ def get_DTS(bert_model,cs_model,tokenizer,inputs):
     timeline = get_timeline(df = inference_processed, label = label, raw_df = inputs)
     return timeline
 
+def get_summary_input(input):
+    dialogue = input["dialogue"]
+    result = ""
+    for i in range(len(dialogue)):
+        if i == 0:
+            result += dialogue[i]
+        else:
+            result += '</s>' + dialogue[i]
+    return result
+
 def predict_summary(inputs):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    # openai.api_key = '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'
-    # user = inputs['USER_ID']
-    # user = inputs['dialouge']
-    # response = openai.Completion.create(
-    #                 model="text-davinci-003",
-    #                 prompt='Summarize this for a second-grade student:' + ''.join(inputs['dialouge']),
-    #                 frequency_penalty=0.0,
-    #                 presence_penalty=0.0
-    #             )
-    # 주제가 분절된 것을 기준으로 하나의 주제만 summary 한다고 보시면 됩니다!!
-    return f'test 입니다. {inputs["dialogue"][-9]}'
+    generator = pipeline(model='yeombora/dialogue_summarization')
+    output = generator(inputs)[0]['generated_text']
+    return f'요약 결과 : {output}'

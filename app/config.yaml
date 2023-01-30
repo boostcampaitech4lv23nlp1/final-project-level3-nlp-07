@@ -1,5 +1,0 @@
-DTS :
-  cs_PATH : '/opt/ml/input/poc/CS/cs10.pt'
-  BERT_PATH : '/opt/ml/input/poc/BERT/bert_10'
-summary : 
-  API_KEY : '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'
