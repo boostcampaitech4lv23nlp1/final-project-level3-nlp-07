@@ -9,9 +9,13 @@ import streamlit as st
 import os
 from tqdm.auto import tqdm
 import openai
+import collections
+from nltk.tag import pos_tag
+from nltk.tokenize import word_tokenize
 import sys
 sys.path.append("../DTS") # 부모 경로 추가하는 법
 from load_dataset import DTSDataset
+from transformers import pipeline
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -36,7 +40,10 @@ def get_threshold(scores):
     return mu-(std/1.5)
 # 1
 # 배치 단위 서빙을해야한다.
-def inference_DTS(validation_dataloader,bert_model,cs_model):
+def inference_DTS(validation_dataloader, bert_model, cs_model):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    bert_model.to(device)
+    cs_model.to(device)
     scores = []
     for step, batch in tqdm(enumerate(validation_dataloader),desc = 'inference_step',total = len(validation_dataloader)//32):
         pos_input_ids = batch['input_ids'].to(device)
@@ -50,29 +57,41 @@ def inference_DTS(validation_dataloader,bert_model,cs_model):
     scores = torch.sigmoid(torch.tensor(scores))
     tau = get_threshold(scores)
     scores = scores.detach().cpu().numpy().tolist()
-    label = [ 0 if i >= tau else 1 for i in scores] # 1 주제가 바뀐다. 0 : 안바뀐다
+    label = [0 if i >= tau else 1 for i in scores] # 1 주제가 바뀐다. 0 : 안바뀐다
     # label  = [0,0,0,0,0,0,0,1,0,0,0,0,0,1]
     return label
-# 2
+
+# dialogue에서 keyword 뽑아주는 부분
+def keyword_extractor(dialogue):
+    # nltk로 명사군의 단어들만 뽑아보기
+    try:
+        word_tokenize('Hello nltk')
+    except:
+        # import nltk
+        # nltk.download('averaged_perceptron_tagger')
+        print('nltk averaged_perceptron_tagger downloaded')
+    to_keywords = [i for i,p in pos_tag(word_tokenize(' '.join(dialogue))) \
+                                                    if len(i)>1 and p[:2]=='NN' and i !='..']
+    keyword, freq = collections.Counter(to_keywords).most_common(1)[0]
+    # TODO : 다른 키워드 처리 방법 찾아보기
+    return keyword
+
 def get_timeline(df,label,raw_df):
     timeline = []
     seg_idx = 0
     for idx in range(len(df)):
+        # label == 1 means : segmentation!
+        # idx-seg_idx 이전 분절 대비 대화의 최소 개수가 10개는 되도록!
         if label[idx] == 1 and (idx - seg_idx) >= 10 : 
             tmp = {}
-            # label == 1 means : segmentation!
-            # idx-seg_idx 이전 분절 대비 대화의 최소 개수가 10개는 되야지
-            tmp['start'] = str(df['Date'].iloc[seg_idx])   # 시작 시점 표시
-            tmp['content'] = (df['Message'].iloc[seg_idx]) # 키워드 발전 여지 있는 부분
+            tmp['start'] = str(df.loc[seg_idx,'Date'])   # 시작 시점 표시
+            tmp['due'] = str(df.loc[idx,'Date'])
+            tmp['content'] = keyword_extractor(df.loc[seg_idx:idx,'Message'])
             # 전처리 이전 데이터로 메세지를 모아서 보기 위함
-            # st_point, end_point는 raw_df 기준
-            st_point = raw_df[raw_df['Date'] == str(df['Date'].iloc[seg_idx])].index.tolist()[0]
-            end_point = raw_df[raw_df['Date'] == str(df['Date'].iloc[idx])].index.tolist()[0]
-            tmp['dialouge'] =raw_df['Message'].iloc[st_point:end_point+1].tolist() # end_point까지 모집
+            tmp['dialogue'] =raw_df.loc[df.loc[seg_idx,'index']:df.loc[idx,'index'], 'Message'].tolist()
             seg_idx = idx +1
             timeline.append(tmp)
     return timeline
-
 
 def get_DTS(bert_model,cs_model,tokenizer,inputs):
     # pandas to Dataset
@@ -82,19 +101,20 @@ def get_DTS(bert_model,cs_model,tokenizer,inputs):
     inference_sampler = SequentialSampler(inference_set)
     inference_dataloader = DataLoader(inference_set, sampler=inference_sampler, batch_size=32,collate_fn=data_collator)
     label = inference_DTS(inference_dataloader,bert_model,cs_model)
-    timeline = get_timeline(df = inference_processed,label = label,raw_df = inputs)
+    timeline = get_timeline(df = inference_processed, label = label, raw_df = inputs)
     return timeline
 
+def get_summary_input(input):
+    dialogue = input["dialogue"]
+    result = ""
+    for i in range(len(dialogue)):
+        if i == 0:
+            result += dialogue[i]
+        else:
+            result += '</s>' + dialogue[i]
+    return result
+
 def predict_summary(inputs):
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    openai.api_key = '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'
-    # user = inputs['USER_ID']
-    # user = inputs['dialouge']
-    # response = openai.Completion.create(
-    #                 model="text-davinci-003",
-    #                 prompt='Summarize this for a second-grade student:' + ''.join(inputs['dialouge']),
-    #                 frequency_penalty=0.0,
-    #                 presence_penalty=0.0
-    #             )
-    # 주제가 분절된 것을 기준으로 하나의 주제만 summary 한다고 보시면 됩니다!!
-    return f'test 입니다. {inputs["dialouge"][-9]}'
+    generator = pipeline(model='yeombora/dialogue_summarization')
+    output = generator(inputs)[0]['generated_text']
+    return f'요약 결과 : {output}'

@@ -1,0 +1,21 @@
+name: CICD-SSH
+on:
+  push:
+      branches: [ master ]
+      paths:
+        - '/opt/ml/input/final-project-level3-nlp-07/**'            # 우리 경로가 들어가면됨
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}         # 우리가 설정해두면 됨
+        username: ${{ secrets.USERNAME }} # 우리가 설정해두면 됨
+        key: ${{ secrets.SSH_KEY }}       # 우리가 설정해두면 됨
+        port: 22                          # ssh 접속 포트 
+        script: |
+						cd /opt/ml/input/${{github.event.repository.name}}
+						sh deploy_ssh.sh

@@ -4,14 +4,17 @@ import random
 import re
 import torch
 from tqdm import tqdm
+
 class trainDataset(Dataset):
     def __init__(self,df, tokenizer) -> None:
         super(trainDataset, self).__init__()
         self.tokenizer = tokenizer
         self.dataset = self._tokenizing(self._preprocessing(df))
         self.label = [0]*len(self.dataset)
+
     def __len__(self):
         return len(self.dataset)
+
     def _tokenizing(self,df):
         output = []
         for idx, item in tqdm(df.iterrows(),total=len(df)):
@@ -21,6 +24,7 @@ class trainDataset(Dataset):
             output.append([pos_token,neg_token_1])
             output.append([pos_token,neg_token_2])
         return output
+
     def __getitem__(self, idx):
         # print('neg_input_ids' , self.dataset[idx][1]['input_ids'].squeeze(0))
         return {'input_ids' : self.dataset[idx][0]['input_ids'].squeeze(0),
@@ -54,6 +58,7 @@ class trainDataset(Dataset):
         dialog[:7] == "보이스룸 종료" or dialog[:7] == "라이브톡 종료" or dialog[:7] == "라이브톡 시작":
             return False
         return True
+
 class DTSDataset(Dataset):
     def __init__(self,df,tokenizer) -> None:
         super(DTSDataset,self).__init__()
@@ -92,7 +97,7 @@ class DTSDataset(Dataset):
         df.reset_index(drop=True,inplace = True)
         df['Message2'] = pd.concat([df['Message'].iloc[1:],pd.Series('None')]).reset_index(drop=True)           # window 작업
         df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)                                  # date 날짜화 str -> datetime
-        df = df[["index", "Date", "User", "Message", "Message2"]]
+        df = df[["Date", "User", "Message","Message2"]]
         # df_filtered2 = df[ df['Date'].isin(pd.date_range('2022-12-16', '2022-12-17',freq = 's'))] # 원하는 일자별로 자를 수도 있음묘 
         return df
 
@@ -117,15 +122,12 @@ class DTSDataset(Dataset):
         if dialog == "이모티콘" or dialog == "사진" or dialog == "카카오톡 프로필" or dialog == "음성메시지" or dialog == "보이스룸이 방금 시작했어요." or \
         dialog[:7] == "보이스룸 종료" or dialog[:7] == "라이브톡 종료" or dialog[:7] == "라이브톡 시작":
             return False
-        
-
         return True
-        
+
     def text_replace(self,dialog):                                       # '\n' -> ' ' , 링크 -> [LINK] 로 변경
         line = "\n"
         dialog = re.sub(pattern=line, repl =" ", string=dialog)
 
         web = "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
         dialog = re.sub(pattern=web, repl ="[LINK]", string=dialog)
-
         return dialog.strip()

@@ -50,14 +50,14 @@ model.cuda(device)
 sample_num_memory = []
 id_inputs = []
 
-PATH = '/opt/ml/input/data/dialouge/train.csv'
+PATH = '/opt/ml/input/data/dialogue/train.csv'
 df = pd.read_csv(PATH)
 
 # generate pos/neg pairs ....
 print('The group number is: '+ str(len(df)))
 print('start generating pos and neg pairs ... ')
 train_inputs = df
-validation_inputs = pd.read_csv('/opt/ml/input/data/dialouge/valid.csv')
+validation_inputs = pd.read_csv('/opt/ml/input/data/dialogue/valid.csv')
 
 train_dataset = trainDataset(train_inputs,tokenizer)
 valid_dataset = trainDataset(validation_inputs,tokenizer)
