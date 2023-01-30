@@ -13,7 +13,7 @@ import bentoml
 st.set_page_config(layout="wide")
 
 root = 'http://0.0.0.0:8001/'
-bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230130082647_CB9E5E'
+bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230130092330_12BC40'
 bento_svc = bentoml.load(bentoml_path)
 
 def get_now(start_date, time_period, df):    

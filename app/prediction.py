@@ -106,12 +106,7 @@ def get_DTS(bert_model,cs_model,tokenizer,inputs):
 
 def get_summary_input(input):
     dialogue = input["dialogue"]
-    result = ""
-    for i in range(len(dialogue)):
-        if i == 0:
-            result += dialogue[i]
-        else:
-            result += '</s>' + dialogue[i]
+    result = '</s>'.join(dialogue)
     return result
 
 def predict_summary(inputs):
