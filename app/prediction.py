@@ -62,11 +62,10 @@ def keyword_extractor(dialogue):
     # nltk로 명사군의 단어들만 뽑아보기
     try:
         word_tokenize('Hello nltk')
-        print('nltk requirement fulfilled')
     except:
-        import nltk
-        nltk.download('averaged_preceptron_tagger')
-        print('nltk averaged_preceptron_tagger downloaded')
+        # import nltk
+        # nltk.download('averaged_perceptron_tagger')
+        print('nltk averaged_perceptron_tagger downloaded')
     to_keywords = [i for i,p in pos_tag(word_tokenize(' '.join(dialogue))) \
                                                     if len(i)>1 and p[:2]=='NN' and i !='..']
     keyword, freq = collections.Counter(to_keywords).most_common(1)[0]
