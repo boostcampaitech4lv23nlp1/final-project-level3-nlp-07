@@ -1,19 +1,21 @@
-from model import CSModel
+from model import CSModel, generate_model, tokenizer_input, CandidateScorer
 import bentoml
 from bentoml import env, artifacts, api
 from bentoml.adapters import JsonInput
 from bentoml.frameworks.transformers import TransformersModelArtifact
 from bentoml.service.artifacts.common import PickleArtifact
-from transformers import BartForConditionalGeneration, PreTrainedTokenizerFast, pipeline, AutoTokenizer, BertModel
+from transformers import BartForConditionalGeneration, PreTrainedTokenizerFast, pipeline, AutoTokenizer, BertModel, AutoModel
 from prediction import *
 import torch
+import numpy as np
 
 
 @env(infer_pip_packages=True)
 @artifacts([
     TransformersModelArtifact('kobart_model'),
     TransformersModelArtifact('bert_10'),
-    PickleArtifact('cs_10')])
+    PickleArtifact('cs_10'),
+    TransformersModelArtifact('simcls')])
 class SummaryService(bentoml.BentoService):
     @api(input=JsonInput(), batch=False)
     def dts(self, input):
@@ -26,19 +28,21 @@ class SummaryService(bentoml.BentoService):
 
     @api(input=JsonInput(), batch=False)
     def summarization(self, parsed_json):
+        bart_model = self.artifacts.kobart_model.get("model")
+        bart_tokenizer = self.artifacts.kobart_model.get("tokenizer")
+        roberta_model = self.artifacts.simcls.get("model")
+        roberta_tokenizer = self.artifacts.simcls.get("tokenizer")
+
         dialogue = parsed_json.get("dialogue")
-        result = ""
-        for i in range(len(dialogue)):
-            if i == 0:
-                result += dialogue[i]
-            else:
-                result += '</s>' + dialogue[i]
-        model = self.artifacts.kobart_model.get("model")
-        tokenizer = self.artifacts.kobart_model.get("tokenizer")
-        model_name = "yeombora/dialogue_summarization"
-        generator = pipeline(model=model_name)
-        output = generator(result)[0]['generated_text']
-        return output
+        input = '</s>'.join(dialogue)
+        
+        candidates = generate_model(bart_model, bart_tokenizer, input)
+        inputs = tokenizer_input(roberta_tokenizer, input, candidates)
+        score = CandidateScorer(roberta_model, **inputs)
+        score = score.detach().numpy()
+        indices = np.argmax(score, axis=-1)
+
+        return candidates[indices]
 
 
 if __name__ == "__main__":
@@ -52,8 +56,11 @@ if __name__ == "__main__":
     dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/BERT/cs10.pt'))
     dts_cs_model.to(device)  
 
-    summary_model = BartForConditionalGeneration.from_pretrained("yeombora/dialogue_summarization").to(device)  
     summary_tokenizer = PreTrainedTokenizerFast.from_pretrained("yeombora/dialogue_summarization", use_fast=True)
+    summary_model = BartForConditionalGeneration.from_pretrained("yeombora/dialogue_summarization").to(device)  
+
+    roberta_tokenizer = AutoTokenizer.from_pretrained("yeombora/SimCLS_Test")  
+    roberta_model = AutoModel.from_pretrained("yeombora/SimCLS_Test").to(device)  
 
     bento_svc = SummaryService()
 
@@ -65,5 +72,8 @@ if __name__ == "__main__":
 
     artifact = {"model" : dts_cs_model}
     bento_svc.pack("cs_10", artifact)
+
+    artifact = {"model" : roberta_model, "tokenizer" : roberta_tokenizer}
+    bento_svc.pack("simcls", artifact)
     
     saved_path = bento_svc.save()
