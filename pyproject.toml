@@ -27,7 +27,7 @@ transformers="^4.25.1"
 wandb="^0.13.7"
 chardet="^5.1.0"
 bentoml="^0.13.1"
-xgboost="1.7.3"
+xgboost="^1.7.3"
 
 [build-system]
 requires = ["poetry-core"]
