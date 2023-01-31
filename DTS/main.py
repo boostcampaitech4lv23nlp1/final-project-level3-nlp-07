@@ -10,6 +10,9 @@ import argparse
 import torch.nn as nn
 from load_dataset import *
 from utils import *
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["WANDB_DISABLED"] = "false"
 def train(cfg):
     ## Device
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
