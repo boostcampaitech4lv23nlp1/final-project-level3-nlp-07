@@ -6,7 +6,7 @@ import torch
 from tqdm import tqdm
 import sys
 sys.path.append("../utils") # 부모 경로 추가하는 법
-from preprocessing import _preprocess
+from utils import _preprocess
 
 class DTSDataset(Dataset):
     def __init__(self,df,tokenizer) -> None:
