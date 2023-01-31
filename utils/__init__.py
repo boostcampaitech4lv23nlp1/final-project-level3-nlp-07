@@ -1,5 +1,6 @@
-__all__ = ['preprocessing']
+__all__ = ['preprocessing', 'postprocessing']
 from . import preprocessing
+from . import postprocessing
 
 
 

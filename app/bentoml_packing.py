@@ -8,6 +8,8 @@ from transformers import BartForConditionalGeneration, PreTrainedTokenizerFast, 
 from prediction import *
 import torch
 import numpy as np
+# sys.path.append("../utils") # 부모 경로 추가하는 법 -> 이미 load_dataset.py에서 추가가 되었다.
+from postprocessing import postprocess
 
 
 @env(infer_pip_packages=True)
@@ -37,6 +39,7 @@ class SummaryService(bentoml.BentoService):
         input = '</s>'.join(dialogue)
         
         candidates = generate_model(bart_model, bart_tokenizer, input)
+        candidates = postprocess(candidates)
         inputs = tokenizer_input(roberta_tokenizer, input, candidates)
         score = CandidateScorer(roberta_model, **inputs)
         score = score.detach().numpy()
