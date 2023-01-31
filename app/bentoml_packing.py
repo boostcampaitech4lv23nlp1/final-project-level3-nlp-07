@@ -53,7 +53,7 @@ if __name__ == "__main__":
     dts_bert_model = BertModel.from_pretrained('/opt/ml/input/poc/BERT/bert_10').to(device)  
 
     dts_cs_model = CSModel()  
-    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/BERT/cs10.pt'))
+    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/CS/cs10.pt'))
     dts_cs_model.to(device)  
 
     summary_tokenizer = PreTrainedTokenizerFast.from_pretrained("yeombora/dialogue_summarization", use_fast=True)
