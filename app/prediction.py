@@ -12,8 +12,8 @@ import openai
 import collections
 from nltk.tag import pos_tag
 from nltk.tokenize import word_tokenize
-# import sys
-# sys.path.append("../DTS") # 부모 경로 추가하는 법
+import sys
+sys.path.append("../DTS") # 부모 경로 추가하는 법
 from load_dataset import DTSDataset
 from transformers import pipeline
 
