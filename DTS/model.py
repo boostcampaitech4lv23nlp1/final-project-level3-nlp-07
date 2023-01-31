@@ -35,8 +35,12 @@ class CSModel(nn.Module):
                                         'Active_fn' : nn.ReLU(),
                                         'Dropout' : nn.Dropout(p=0.1),
                                         'cls_layer' : nn.Linear(self.hidden_size, 1),
-                                        'Active_fn' : nn.Sigmoid(),}))
+                                        'Active_fn' : nn.Tanh(),}))
     def forward(self,input):
+        required_keys = ['input_ids', 'attention_mask', 'neg_input_ids', 'neg_attention_mask']
+        if not all(key in input for key in required_keys):
+            raise KeyError("Input is missing required keys: {}".format(required_keys))
+
         input_ids = input['input_ids']
         attention_mask = input['attention_mask']
         neg_input_ids = input['neg_input_ids']
@@ -52,7 +56,7 @@ class CSModel(nn.Module):
         pos_scores = self.cs_model(pos_scores[:,0,:])
         neg_scores = self.cs_model(neg_scores[:,0,:])
 
-        return {'output' : (pos_scores, neg_scores)}
+        return {'output' : {'pos' : pos_scores, 'neg' : neg_scores}}
     
 # coherence_prediction_decoder = CSModel().to(device)
 

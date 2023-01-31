@@ -18,7 +18,7 @@ train:
     num_workers : 4
     logging_step: 100
     patience : 2
-    warmup_steps : 1000
+    warmup_steps : 999999
     weight_decay: 0.01
     checkpoint : /opt/ml/input/poc
     marker_mode : TEM_punct

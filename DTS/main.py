@@ -7,8 +7,9 @@ from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from omegaconf import OmegaConf
 import wandb
 import argparse
+from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 import torch.nn as nn
-from load_dataset import *
+from load_dataset import TrainDataset,load_data
 from utils import *
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -34,10 +35,38 @@ def train(cfg):
     ## load dataset 
     train_inputs = load_data(cfg.data.train_data)
     validation_inputs = load_data(cfg.data.valid_data)
-    train_dataset = trainDataset(train_inputs,tokenizer)
-    valid_dataset = trainDataset(validation_inputs,tokenizer)
-    print(f'train_len : {len(train_dataset)}, valid_len : {len(valid_dataset)} now loading ...')
-    data_collator = DataCollatorWithPadding(tokenizer,padding=True, pad_to_multiple_of=8)
+    train_dataset = TrainDataset(train_inputs,tokenizer)
+    valid_dataset = TrainDataset(validation_inputs,tokenizer)
+    data_collator = DataCollatorWithPadding(tokenizer,padding=True)
+    # print(f'train_len : {len(train_dataset)}, valid_len : {len(valid_dataset)} now loading ...')
+    # debugging
+    # def MarginRankingLoss(p_scores, n_scores):
+    #     margin = 1
+    #     scores = margin - p_scores + n_scores
+    #     scores = scores.clamp(min=0)
+    #     return scores.mean()
+    # validation_sampler = SequentialSampler(valid_dataset)
+    # validation_dataloader = DataLoader(valid_dataset, sampler=validation_sampler, batch_size=32,collate_fn=data_collator)
+    # def compute_metrics(validation_dataloader):
+    #     # ls = (pos_score > neg_score).squeeze(0).detach().cpu().numpy().tolist()
+    #     pos_score = torch.tensor([0]).unsqueeze(dim=0)
+    #     neg_score = torch.tensor([0]).unsqueeze(dim=0)
+    #     for batch in validation_dataloader:
+    #         inputs = {k : v for k,v in batch.items()}
+    #         output = model(inputs)
+    #         logits = output['output']
+    #         pos_score = torch.cat([pos_score,logits['pos']],dim = 0)
+    #         neg_score = torch.cat([neg_score,logits['neg']],dim = 0)
+    #     ls = (pos_score > neg_score).squeeze(0).numpy().tolist()
+    #     acc =0
+    #     for i in ls:
+    #         acc += int(i[0])
+    #     return {'acc' : acc/len(ls)}
+    # print('train_before : ', compute_metrics(validation_dataloader))
+    # exit()
+    # train_sampler = RandomSampler(train_dataset)
+    # train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=32,collate_fn=data_collator)
+    # # Create the DataLoader for our validation set.
 
 
     # model.plm.resize_token_embeddings(len(RE_train_dataset.tokenizer))
@@ -46,7 +75,10 @@ def train(cfg):
     
     ## train arguments
     training_args = TrainingArguments(
-        output_dir=cfg.train.checkpoint,
+        do_train= True,
+        do_eval= False,
+        do_predict=False,
+        output_dir=cfg.model.saved_model,
         save_total_limit=5,
         save_steps=cfg.train.warmup_steps,
         num_train_epochs=cfg.train.epoch,
@@ -60,16 +92,16 @@ def train(cfg):
         weight_decay=cfg.train.weight_decay,               
     
         # for log
-        logging_steps=cfg.train.logging_step,               
+        logging_steps=cfg.train.logging_step,       
         evaluation_strategy='steps',     
         eval_steps = cfg.train.warmup_steps,                 # evaluation step.
         load_best_model_at_end = True,
         
-        metric_for_best_model= 'eval_loss',
+        metric_for_best_model= 'loss',
         greater_is_better=False,                             # False : loss 기준으로 최적화 해봄 도르
         dataloader_num_workers=cfg.train.num_workers,
         fp16=True,
-        group_by_length = True,
+        # group_by_length = True,
 
         # push_to_hub=cfg.huggingface.push_to_hub,                      # huggingface hub에 model을 push할지의 여부
         # hub_private_repo=cfg.huggingface.hub_private_repo,                  # huggingface hub에 private로 설정할지 여부
@@ -77,17 +109,18 @@ def train(cfg):
         # push_to_hub_organization=cfg.huggingface.push_to_hub_organization,
         # hub_model_id =  cfg.huggingface.hub_model_id,
         # wandb
-        report_to="wandb",
+        # report_to="wandb",
         run_name= cfg.wandb.exp_name
         )
     # data_collator = DataCollatorWithPadding(tokenizer,padding=True)
     trainer = MarginalTrainer(
         model=model,                     # the instantiated 🤗 Transformers model to be trained
         args=training_args,              # training arguments, defined above
-        # data_collator = data_collator,
+        tokenizer=tokenizer,
+        data_collator = data_collator,
         train_dataset= train_dataset,  # training dataset
         eval_dataset= valid_dataset,     # evaluation dataset use dev
-        compute_metrics=compute_metrics,  # define metrics function
+        # compute_metrics=compute_metrics,  # define metrics function
         optimizers = optimizers
         # callbacks = [EarlyStoppingCallback(early_stopping_patience=cfg.train.patience)]# total_step / eval_step : max_patience
     )
@@ -95,9 +128,9 @@ def train(cfg):
     ## train model
     trainer.train()
     
-    ## save model
-    # model.save_model(cfg.model.saved_model)
-    torch.save(model,cfg.model.saved_model)
+    # ## save model
+    # # model.save_model(cfg.model.saved_model)
+    torch.save(model.state_dict(),'/opt/ml/input/poc/CS/cs' + str(cfg.model.saved_model) + '.pt')
 
 
 if __name__ == '__main__':
