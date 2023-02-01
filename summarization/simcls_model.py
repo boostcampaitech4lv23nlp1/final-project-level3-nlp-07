@@ -22,7 +22,6 @@ class GeneratorParameters:
     diversity_penalty: float = 1.
     length_penalty: float = 2.
 
-
 class CandidateGenerator:
     
     default_parameters = GeneratorParameters()
@@ -30,15 +29,14 @@ class CandidateGenerator:
     def __init__(self, path: str, device: torch.device = None, **kwargs) -> None:
         super(CandidateGenerator, self).__init__()
 
-        # self.parameters = self.__get_params(path, **kwargs)
         self.parameters = GeneratorParameters()
+        # self.parameters = __get_params(cfg)
 
         self.device = device if device is not None else torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.generator, self.tokenizer = self.__get_generator_and_tokenizer(path)
 
         self.generator = self.generator.eval().to(self.device)
-        # self.generator = self.generator.eval()
 
     @torch.no_grad()
     def forward(self, docs: List[str]) -> List[List[str]]:
@@ -46,7 +44,6 @@ class CandidateGenerator:
         inputs = self.tokenizer(docs, padding="longest", truncation=True, return_tensors="pt")
 
         candidates_input_ids = self.generator.generate(
-            # input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"],
             input_ids=inputs["input_ids"].to(self.device), attention_mask=inputs["attention_mask"].to(self.device),
             early_stopping=True,
             num_beams=self.parameters.num_beams,

@@ -1,19 +1,17 @@
 from dataclasses import dataclass
 from typing import Dict, Any, Tuple, List
-
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
-
 from rouge_score.rouge_scorer import RougeScorer
 from torch.utils.data import DataLoader, RandomSampler
 from tqdm import tqdm
-
+from metrics import RankingLoss
 from transformers import AutoTokenizer
-
 from simcls_model import CandidateScorer, CandidateGenerator
+
 import os
 import gc
 import pickle
@@ -91,31 +89,6 @@ class SummarizationDataset(torch.utils.data.Dataset):
 
             return candidates_input_ids, candidates_attention_mask
 
-class RankingLoss(nn.Module):
-
-    def __init__(self, margin_lambda: float = 0.01) -> None:
-        super(RankingLoss, self).__init__()
-
-        self.margin_lambda = margin_lambda
-
-    def forward(self, candidates_scores: torch.Tensor, summary_scores: torch.Tensor) -> torch.Tensor:
-
-        batch_size, num_candidates = candidates_scores.size()
-
-        # computes candidates vs summary loss
-        summary_scores = summary_scores.unsqueeze(1).expand(batch_size, num_candidates)
-        ranking_target = torch.ones_like(candidates_scores)
-        loss = F.margin_ranking_loss(summary_scores, candidates_scores, target=ranking_target, margin=0.)
-
-        # computes candidates ranking loss
-        for i in range(1, num_candidates):
-            ranking_target = torch.ones_like(candidates_scores[:, :-i])
-            loss += F.margin_ranking_loss(candidates_scores[:, :-i], candidates_scores[:, i:],
-                                          target=ranking_target, margin=i * self.margin_lambda)
-
-        return loss
-
-
 class Scheduler:
     """
         SimCLS learning rate scheduler as described in paper.
@@ -139,7 +112,7 @@ class Scheduler:
 class Trainer:
     def __init__(self, model: CandidateScorer, generator_path, roberta_path) -> None:
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # self.candidate_generator = CandidateGenerator(generator_path, device=self.device)
+        self.candidate_generator = CandidateGenerator(generator_path, device=self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(roberta_path)
         self.model = model.to(self.device)
 
@@ -154,17 +127,17 @@ class Trainer:
 
         return inputs
 
-    def collate_inputs_to_batch(self, inputs: List[Dict[str, Any]]) -> Dict[str, Any]:
-        batch = {
-            "doc_input_ids": torch.tensor([inp["doc_input_ids"] for inp in inputs], dtype=torch.long),
-            "doc_att_mask": torch.tensor([inp["doc_att_mask"] for inp in inputs], dtype=torch.long),
-            "candidates_input_ids": torch.tensor([inp["candidates_input_ids"] for inp in inputs], dtype=torch.long),
-            "candidates_att_mask": torch.tensor([inp["candidates_att_mask"] for inp in inputs], dtype=torch.long),
-            "summary_input_ids": torch.tensor([inp["summary_input_ids"] for inp in inputs], dtype=torch.long),
-            "summary_att_mask": torch.tensor([inp["summary_att_mask"] for inp in inputs], dtype=torch.long)
-        }
+    # def collate_inputs_to_batch(self, inputs: List[Dict[str, Any]]) -> Dict[str, Any]:
+    #     batch = {
+    #         "doc_input_ids": torch.tensor([inp["doc_input_ids"] for inp in inputs], dtype=torch.long),
+    #         "doc_att_mask": torch.tensor([inp["doc_att_mask"] for inp in inputs], dtype=torch.long),
+    #         "candidates_input_ids": torch.tensor([inp["candidates_input_ids"] for inp in inputs], dtype=torch.long),
+    #         "candidates_att_mask": torch.tensor([inp["candidates_att_mask"] for inp in inputs], dtype=torch.long),
+    #         "summary_input_ids": torch.tensor([inp["summary_input_ids"] for inp in inputs], dtype=torch.long),
+    #         "summary_att_mask": torch.tensor([inp["summary_att_mask"] for inp in inputs], dtype=torch.long)
+    #     }
 
-        return batch
+    #     return batch
 
     def train(self, train_dataloader, val_dataloader, config: TrainConfig) -> None:
         optimizer = torch.optim.Adam(self.model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
@@ -174,35 +147,35 @@ class Trainer:
         # train_dialogue, train_summary = train_dataloader["dialogue"][:300], train_dataloader["summary"][:300]
         # val_dialogue, val_summary = val_dataloader["dialogue"][:300], val_dataloader["summary"][:300]
         
-        train_dialogue = [doc for doc in train_dataloader["dialogue"][:40000]]
-        train_summary  = [doc for doc in train_dataloader["summary"][:40000]]
-        train_ID       = [doc for doc in train_dataloader["ID"][:40000]]
-        val_dialogue   = [doc for doc in val_dataloader["dialogue"][:4000]]
-        val_summary    = [doc for doc in val_dataloader["summary"][:4000]]
-        val_ID         = [doc for doc in val_dataloader["ID"][:4000]]
+        train_dialogue = [doc for doc in train_dataloader["dialogue"]]
+        train_summary  = [doc for doc in train_dataloader["summary"]]
+        train_ID       = [doc for doc in train_dataloader["ID"]]
+        val_dialogue   = [doc for doc in val_dataloader["dialogue"]]
+        val_summary    = [doc for doc in val_dataloader["summary"]]
+        val_ID         = [doc for doc in val_dataloader["ID"]]
 
         print(len(train_dialogue), len(val_dialogue))
 
         path = "/opt/ml/final-project-level3-nlp-07/summarization/generate_data/"
 
-        # train_candidate = [self.candidate_generator([train_dialogue[i]])[0] for i in tqdm(range(len(train_dialogue)))]
-        # val_candidate = [self.candidate_generator([val_dialogue[i]])[0] for i in tqdm(range(len(val_dialogue)))]
+        train_candidate = [self.candidate_generator([train_dialogue[i]])[0] for i in tqdm(range(len(train_dialogue)))]
+        val_candidate = [self.candidate_generator([val_dialogue[i]])[0] for i in tqdm(range(len(val_dialogue)))]
 
-        # with open(path + 'generate_train.pkl', 'wb') as f:
+        # with open(path + 'generate_train.pkl', 'wb') as f:            # candidate 저장
         #     pickle.dump(train_candidate, f)
 
         # with open(path + 'generate_valid.pkl', 'wb') as f:
         #     pickle.dump(val_candidate, f)
 
 
-        with open(path + 'generate_train.pkl','rb') as f:
-            train_candidate = pickle.load(f)
+        # with open(path + 'generate_train.pkl','rb') as f:             # candidate 불러오기
+        #     train_candidate = pickle.load(f)
 
-        with open(path + 'generate_valid.pkl','rb') as f:
-            val_candidate = pickle.load(f)
+        # with open(path + 'generate_valid.pkl','rb') as f:
+        #     val_candidate = pickle.load(f)
 
-        train_candidate = train_candidate[:40000]
-        val_candidate = val_candidate[:4000]
+        train_candidate = train_candidate
+        val_candidate = val_candidate
 
         train_candidates = [cand for doc_cands in train_candidate for cand in doc_cands]
         val_candidates = [cand for doc_cands in val_candidate for cand in doc_cands]
@@ -212,20 +185,8 @@ class Trainer:
         train_num_docs, train_num_candidates_per_doc = len(train_dialogue), len(train_candidate[0])
         val_num_docs, val_num_candidates_per_doc = len(val_dialogue), len(val_candidate[0])
 
-        # print(train_dialogue)
-        # print("-" * 100)
-        # print(train_summary)
-        # print("-" * 100)
-        # print(train_candidates)
-
-        # train_dataloader = [train_data input_ids, train_data attmask, candidate input_ids, candidate attmask, summary input_ids, attmask] 필요
-        # train_dataloader 들어갈 때, BART Tokenizer로 dialogue, summary, candidate를 -> input_ids, attention_mask로 변환 -> 총 6가지 (Roberta-base tokenizer)
-        # candidate dataset 저장하기 -> 너무 오래걸림 저장해서 불러오자......
-
         train_dataset = SummarizationDataset(train_dialogue, train_summary, train_candidates, self.tokenizer, train_num_docs, train_num_candidates_per_doc, train_ID)
         val_dataset = SummarizationDataset(val_dialogue, val_summary, val_candidates, self.tokenizer, val_num_docs, val_num_candidates_per_doc, val_ID)
-
-        print(val_candidate[0])
 
         train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
         val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=True)
@@ -288,14 +249,6 @@ class Trainer:
             for batch in tqdm(test_dataloader):
 
                 inputs = self.__batch_to_device(batch)
-                # inputs = {
-                #     "doc_input_ids" : batch["doc_input_ids"],
-                #     "doc_att_mask" : batch["doc_att_mask"],
-                #     "candidates_input_ids" : batch["candidates_input_ids"],
-                #     "candidates_att_mask" : batch["candidates_att_mask"],
-                #     "summary_input_ids" : batch["summary_input_ids"],
-                #     "summary_att_mask" : batch["summary_att_mask"]
-                # }
 
                 candidate_scores, summary_scores = self.model(**inputs)
                 loss = criterion(candidate_scores, summary_scores)

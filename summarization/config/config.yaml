@@ -23,8 +23,15 @@ arg:
     max_eval_samples: # None
     num_beams: # None
     resize_position_embeddings: # None
-
-
+    lr : 5e-5 
+    batch_size : 2
+    num_epochs : 5 
+    save_dir : "/opt/ml/final-project-level3-nlp-07/summarization/simcls_model"
+    weight_decay : 0.1
+    margin_lambda : 0.01
+    eval_steps : 1000
+    early_stopping_patience : -1
+    
 train:
     seed: 42
     per_device_train_batch_size: 32
