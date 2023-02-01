@@ -8,7 +8,6 @@ import yaml
 import streamlit as st
 import os
 from tqdm.auto import tqdm
-import openai
 import collections
 from nltk.tag import pos_tag
 from nltk.tokenize import word_tokenize

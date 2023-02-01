@@ -20,12 +20,14 @@ PyYAML="^6.0"
 requests="^2.28.1"
 streamlit="^1.17.0"
 streamlit_chat="^0.0.2.1"
-streamlit_timeline="^0.0.2"
-streamlit_vis_timeline="^0.2.0"
+streamlit-vis-timeline="^0.2.0"
 torch="^1.13.1"
 tqdm="^4.64.1"
 transformers="^4.25.1"
 wandb="^0.13.7"
+chardet="^5.1.0"
+bentoml="^0.13.1"
+xgboost="^1.7.3"
 
 [build-system]
 requires = ["poetry-core"]
