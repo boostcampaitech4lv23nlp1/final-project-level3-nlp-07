@@ -8,6 +8,8 @@ from transformers import BartForConditionalGeneration, PreTrainedTokenizerFast, 
 from prediction import *
 import torch
 import numpy as np
+# sys.path.append("../utils") # 부모 경로 추가하는 법 -> 이미 load_dataset.py에서 추가가 되었다.
+from postprocessing import postprocess
 
 
 @env(infer_pip_packages=True)
@@ -35,6 +37,7 @@ class SummaryService(bentoml.BentoService):
         input = '</s>'.join(dialogue)
         
         candidates = generate_model(bart_model, bart_tokenizer, input)
+        candidates = postprocess(candidates)
         inputs = tokenizer_input(roberta_tokenizer, input, candidates)
         score = CandidateScorer(roberta_model, **inputs)
         score = score.detach().numpy()
@@ -51,7 +54,9 @@ if __name__ == "__main__":
     # dts_bert_model = BertModel.from_pretrained('/opt/ml/input/poc/BERT/bert_10').to(device)  
 
     dts_cs_model = CSModel()  
+
     dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/Domain_Topic_Sgmentation/Dialog_Topic_segmentation_v1/Domain_Topic_segmentor.pt'))
+
     dts_cs_model.to(device)  
 
     summary_tokenizer = PreTrainedTokenizerFast.from_pretrained("yeombora/dialogue_summarization", use_fast=True)

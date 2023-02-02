@@ -15,7 +15,9 @@ from pymongo import MongoClient
 st.set_page_config(layout="wide")
 
 root = 'http://0.0.0.0:8001/'
+
 bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230202015126_8AA47D'
+
 bento_svc = bentoml.load(bentoml_path)
 
 def get_now(start_date, time_period, df):    
