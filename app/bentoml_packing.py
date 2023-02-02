@@ -18,6 +18,7 @@ from postprocessing import postprocess
     TransformersModelArtifact('bert_10'),
     PickleArtifact('cs_10'),
     TransformersModelArtifact('simcls')])
+
 class SummaryService(bentoml.BentoService):
     @api(input=JsonInput(), batch=False)
     def dts(self, input):
@@ -26,7 +27,6 @@ class SummaryService(bentoml.BentoService):
         cs_model = self.artifacts.cs_10.get("model")
         timeline = get_DTS(bert_model, cs_model, dts_tokenizer, input)
         return timeline
-
 
     @api(input=JsonInput(), batch=False)
     def summarization(self, parsed_json):
@@ -46,7 +46,6 @@ class SummaryService(bentoml.BentoService):
         indices = np.argmax(score, axis=-1)
 
         return candidates[indices]
-
 
 if __name__ == "__main__":
 

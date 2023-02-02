@@ -9,7 +9,6 @@ from datetime import timedelta
 from prediction import *
 import bentoml
 
-
 st.set_page_config(layout="wide")
 
 root = 'http://0.0.0.0:8001/'
@@ -21,32 +20,7 @@ def get_now(start_date, time_period, df):
     sample = df[df['Date'].isin(pd.date_range(str(start_date), str(start_date + timedelta(days=time_period)),freq = 's'))]
     return sample
 
-def txt_to_csv(uploaded_file, encoding):
-    ymd_format = '\d{4}년 \d{1,2}월 \d{1,2}일'
-    raw_data = []
-    for r in uploaded_file.getvalue().decode(encoding).splitlines():
-        raw_date = re.findall(ymd_format, r)
-        if len(raw_date)>0:
-            idx_date='-'.join([d if len(d)>1 else '0'+d for d in re.findall('\d+',raw_date[0])])
-        else:
-            raw_sentence = r.replace('\n','').replace('[','').split(']')
-            if len(raw_sentence)>1:
-                try:
-                    pmam, hm = raw_sentence[1].lstrip().split()
-                    if pmam == '오전':
-                        pmam = 'AM'
-                    else:
-                        pmam = 'PM'
-                    hm = hm +':00'
-                    if len(hm)<8:
-                        hm = '0'+hm
-                    fin_date=' '.join([idx_date,hm,pmam])
-                    raw_data.append([fin_date,raw_sentence[0].strip(),raw_sentence[2].lstrip()])
-                except:
-                    pass
-    fin_pd = pd.DataFrame(raw_data,columns=['Date','User','Message'])
-    return fin_pd
-
+# TODO : DB에 맞춰기, 필요 없을 가능성도 있음
 def form_return(uploaded_file, start_date, time_period):
     # chardet 라이브러리로 인코딩 확인 후 맞춰서 encoding, csv와 txt의 getvalue() 형식이 다르다.
     if uploaded_file.name.split('.')[-1]=='csv':
@@ -59,7 +33,6 @@ def form_return(uploaded_file, start_date, time_period):
     sample = get_now(start_date,time_period, df)   # data 크기 감소
     return sample
 
-
 if __name__ == '__main__':
     st.title("오픈 채팅방 요약 서비스")
     with st.form(key='my_form'):
@@ -67,31 +40,24 @@ if __name__ == '__main__':
         with c1 : start_date = st.date_input('대화 시작 시점을 설정해주세요.')
         with c2 : time_period  = st.slider('총 기간을 설정해주세요. 최대 10일입니다.', 1,10)
         uploaded_file = st.file_uploader('CSV 또는 TXT 파일을 제출해주세요.',type = ['csv', 'txt'])
-        submit = st.form_submit_button(label='제출') # True or False
-    # items = []
+        submit = st.form_submit_button(label='제출')
     if submit:
-        # tokenizer의 경우 hash가 불가했음, unknown object type
         sample = form_return(uploaded_file, start_date, time_period)
         if len(sample) <100:
             st.warning('데이터가 충분하지 않습니다. 대화 시점과 기간을 확인해주세요.')
-        with st.spinner('DTS 추론 중..'): # with 아래 까지 실행되는 동안 동그라미를 띄운다.
-            # api로 날릴수 있는 부분 -> backend에 요청할 부분!
+        with st.spinner('DTS 추론 중..'):
+            # TODO : Request로 받기
             items = bento_svc.dts(sample)
-            st.success('...완료') #질문!
-            # if 'items' not in st.session_state:
-                # dict key value -> 선언을 하게 되면 로컬변수가 아니라 캐시로 저장을 하게 됩니다.
-                # with문 안에서 선언되는 것들 또는 함수 안에서 진행되는 변수들을 전역 변수로 바꿔 준다고 이해
+            st.success('...완료')
             st.session_state['items'] = items
-    cls = st.columns([0.27,0.03,0.7],gap ='small') # 화면 분할 레이어 3개로 
+    cls = st.columns([0.27,0.03,0.7],gap ='small') 
     with cls[2]:
-        timeline = None # 지역변수니까!
-        if 'items' in st.session_state: # 키를 나열해요 st.session_State = [key1, key2]
-            timeline = st_timeline(st.session_state['items'], groups=[], options={}, height="300px")             # DTS 시각화
-            # https://github.com/giswqs/streamlit-timeline/blob/master/streamlit_timeline/__init__.py 
-        # else:
-        #     st.warning("items not available")
+        timeline = None
+        if 'items' in st.session_state:
+            timeline = st_timeline(st.session_state['items'], groups=[], options={}, height="300px")
         if timeline is not None:
             with st.spinner('요약 생성 중..'):
+                # TODO : Request로 받기
                 response = bento_svc.summarization(timeline)
                 tab1, tab2 = st.tabs(["요약 결과", "검색 링크"])
                 summary = tab1.text_area('기다려주셔서 감사합니다.',f'''

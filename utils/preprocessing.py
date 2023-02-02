@@ -3,15 +3,13 @@ import re
 # from pykospacing import Spacing
 # from hanspell import spell_checker
 
-path = "/opt/ml/input/data/hate_data.csv"                                                # 파일의 폴더 경로
-# output_path = "경로 입력 필요"
+path = "/opt/ml/input/data/hate_data.csv"         
 
 # df = pd.read_csv(path + "파일 이름")                         # csv 파일 DataFrame으로 불러오기
 hate_df = pd.read_csv(path)
 hate = sorted(hate_df["hate"], key=len, reverse=True)
 
 # df = df[1:]                                                     # 내보내기 후 첫 대화는 카카오톡 안내사항
-
 
 def id_check(my_id):                                            # 방장 봇이면 False, 일반 유저인 경우 True
     if my_id == "방장봇":
@@ -93,15 +91,15 @@ def same(df):                                                   # 한 사람이 
 
     return df
 
-# def pyko(dialog):                                             # 맞춤법 확인 후 띄어쓰기
+def pyko(dialog):                                             # 맞춤법 확인 후 띄어쓰기
 
-#     dialog = spell_checker.check(dialog)
-#     dialog = dialog.checked
+    dialog = spell_checker.check(dialog)
+    dialog = dialog.checked
 
-#     dialog = "".join(dialog.split())
-#     dialog = spacing(dialog)
+    dialog = "".join(dialog.split())
+    dialog = spacing(dialog)
 
-#     return dialog
+    return dialog
 
 """
     Date = 메시지 보낸 시간
@@ -131,3 +129,28 @@ def _preprocess(new_df):
 
 # df.to_csv(output_path + "train.csv", index=False)
 
+def txt_to_csv(uploaded_file, encoding):
+    ymd_format = '\d{4}년 \d{1,2}월 \d{1,2}일'
+    raw_data = []
+    for r in uploaded_file.getvalue().decode(encoding).splitlines():
+        raw_date = re.findall(ymd_format, r)
+        if len(raw_date)>0:
+            idx_date='-'.join([d if len(d)>1 else '0'+d for d in re.findall('\d+',raw_date[0])])
+        else:
+            raw_sentence = r.replace('\n','').replace('[','').split(']')
+            if len(raw_sentence)>1:
+                try:
+                    pmam, hm = raw_sentence[1].lstrip().split()
+                    if pmam == '오전':
+                        pmam = 'AM'
+                    else:
+                        pmam = 'PM'
+                    hm = hm +':00'
+                    if len(hm)<8:
+                        hm = '0'+hm
+                    fin_date=' '.join([idx_date,hm,pmam])
+                    raw_data.append([fin_date,raw_sentence[0].strip(),raw_sentence[2].lstrip()])
+                except:
+                    pass
+    fin_pd = pd.DataFrame(raw_data,columns=['Date','User','Message'])
+    return fin_pd

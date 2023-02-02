@@ -16,7 +16,7 @@ numpy="^1.24.1"
 omegaconf="^2.3.0"
 pandas="^1.5.2"
 PyYAML="^6.0"
-requests="^2.28.1"
+requests="^2.28.2"
 streamlit="^1.17.0"
 streamlit_chat="^0.0.2.1"
 streamlit-vis-timeline="^0.2.0"
@@ -27,6 +27,9 @@ wandb="^0.13.7"
 chardet="^5.1.0"
 bentoml="0.13.1"
 xgboost="^1.7.3"
+fastapi = "^0.89.1"
+uvicorn = "^0.20.0"
+pymongo = "^4.3.3"
 
 [build-system]
 requires = ["poetry-core"]
