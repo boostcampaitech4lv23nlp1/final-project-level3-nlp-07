@@ -32,12 +32,12 @@ class CSModel(nn.Module):
         self.hidden_size = model_config.hidden_size
         self.plm = AutoModel.from_pretrained(pretrained_id, add_pooling_layer = False)
         self.cs_model = nn.Sequential(OrderedDict({'Linear' : nn.Linear(self.hidden_size, self.hidden_size),
-                                        'Active_fn' : nn.ReLU(),
+                                        'Active_fn_1' : nn.ReLU(),
                                         'Dropout' : nn.Dropout(p=0.1),
                                         'cls_layer' : nn.Linear(self.hidden_size, 1),
-                                        'Active_fn' : nn.Tanh(),}))
+                                        'Active_fn_2' : nn.Tanh(),}))
     def forward(self,input):
-        required_keys = ['input_ids', 'attention_mask', 'neg_input_ids', 'neg_attention_mask']
+        required_keys = ['input_ids', 'attention_mask', 'neg_input_ids', 'neg_attention_mask','labels']
         if not all(key in input for key in required_keys):
             raise KeyError("Input is missing required keys: {}".format(required_keys))
 
@@ -56,7 +56,7 @@ class CSModel(nn.Module):
         pos_scores = self.cs_model(pos_scores[:,0,:])
         neg_scores = self.cs_model(neg_scores[:,0,:])
 
-        return {'output' : {'pos' : pos_scores, 'neg' : neg_scores}}
+        return {'output' : {'pos' : pos_scores, 'neg' : neg_scores}, 'labels' : input['labels']}
     
 # coherence_prediction_decoder = CSModel().to(device)
 

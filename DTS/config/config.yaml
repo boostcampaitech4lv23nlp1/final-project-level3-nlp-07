@@ -5,20 +5,20 @@ data:
     
 model:
     model_name: klue/roberta-large
-    saved_model: /opt/ml/input/poc/DTS
+    saved_model: /opt/ml/input/poc/Dialog_Topic_segmentation
     # saved_model : /opt/ml/code/best_model/electra/electra_final_test.pt
     
 train:
     train_mode: False
     seed: 42
     batch_size: 32
-    epoch: 10
+    epoch: 5
     lr: 3e-5
     second_lr : 5e-5
     num_workers : 4
     logging_step: 100
     patience : 2
-    warmup_steps : 999999
+    warmup_steps : 2000
     weight_decay: 0.01
     checkpoint : /opt/ml/input/poc
     marker_mode : TEM_punct
@@ -38,6 +38,6 @@ huggingface :
   push_to_hub: True
   hub_private_repo: False
   push_to_hub_organization: yeombora
-  hub_token: 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
+  hub_token: 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
   hub_model_id : Dialog_Topic_segmentation
 

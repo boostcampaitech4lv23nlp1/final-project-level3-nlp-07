@@ -39,7 +39,7 @@ def seed_everything(seed):
 
 
 def compute_metrics(pred):
-    output = pred['output']
+    output = pred.predictions['output']
     ls = (output['pos'] > output['neg']).squeeze(0).detach().cpu().numpy().tolist()
     acc =0
     for i in ls:

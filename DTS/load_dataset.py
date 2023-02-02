@@ -35,4 +35,4 @@ class TrainDataset(Dataset):
                  'attention_mask' : torch.LongTensor(self.dataset[idx][0]['attention_mask']).squeeze(0),
                 'neg_input_ids' : torch.LongTensor(self.dataset[idx][1]['input_ids']).squeeze(0),
                  'neg_attention_mask' : torch.LongTensor(self.dataset[idx][1]['attention_mask']).squeeze(0),
-                 'label' : torch.tensor(self.label[idx])}
+                 'labels' : torch.tensor(self.label[idx]).squeeze(0)}

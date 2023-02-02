@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from model import CSModel
-from transformers import AutoTokenizer, DataCollatorWithPadding, TrainingArguments
+from transformers import AutoTokenizer, DataCollatorWithPadding, TrainingArguments,AutoModel
 from torch import optim
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
 from omegaconf import OmegaConf
@@ -47,6 +47,13 @@ def train(cfg):
     #     return scores.mean()
     # validation_sampler = SequentialSampler(valid_dataset)
     # validation_dataloader = DataLoader(valid_dataset, sampler=validation_sampler, batch_size=32,collate_fn=data_collator)
+    # print(model(next(iter(validation_dataloader))))
+    # # # 병렬 작업이 항상 빠른건 아니다. 
+    # # # 1   ----3
+    # # # 2   ----3
+    # # # 3   ----2        
+    # # # 4   ----1     확인 -> 
+    # # # 순차 -> 9
     # def compute_metrics(validation_dataloader):
     #     # ls = (pos_score > neg_score).squeeze(0).detach().cpu().numpy().tolist()
     #     pos_score = torch.tensor([0]).unsqueeze(dim=0)
@@ -62,7 +69,7 @@ def train(cfg):
     #     for i in ls:
     #         acc += int(i[0])
     #     return {'acc' : acc/len(ls)}
-    # print('train_before : ', compute_metrics(validation_dataloader))
+    # # print('train_before : ', compute_metrics(validation_dataloader))
     # exit()
     # train_sampler = RandomSampler(train_dataset)
     # train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=32,collate_fn=data_collator)
@@ -94,22 +101,22 @@ def train(cfg):
         # for log
         logging_steps=cfg.train.logging_step,       
         evaluation_strategy='steps',     
-        eval_steps = cfg.train.warmup_steps,                 # evaluation step.
-        load_best_model_at_end = True,
+        eval_steps = cfg.train.warmup_steps,                 # evaluation step. 
+        # load_best_model_at_end = True,
         
-        metric_for_best_model= 'loss',
-        greater_is_better=False,                             # False : loss 기준으로 최적화 해봄 도르
+        # metric_for_best_model= 'eval_loss',
+        # greater_is_better=False,                             # False : loss 기준으로 최적화 해봄 도르
         dataloader_num_workers=cfg.train.num_workers,
         fp16=True,
         # group_by_length = True,
 
-        # push_to_hub=cfg.huggingface.push_to_hub,                      # huggingface hub에 model을 push할지의 여부
-        # hub_private_repo=cfg.huggingface.hub_private_repo,                  # huggingface hub에 private로 설정할지 여부
-        # hub_token=cfg.huggingface.hub_token,                         # model hub로 push하는데 사용할 토큰                      
+        push_to_hub=False,                      # huggingface hub에 model을 push할지의 여부
+        hub_private_repo=cfg.huggingface.hub_private_repo,                  # huggingface hub에 private로 설정할지 여부
+        hub_token=cfg.huggingface.hub_token,                         # model hub로 push하는데 사용할 토큰                      
         # push_to_hub_organization=cfg.huggingface.push_to_hub_organization,
-        # hub_model_id =  cfg.huggingface.hub_model_id,
+        hub_model_id =  cfg.huggingface.hub_model_id,
         # wandb
-        # report_to="wandb",
+        report_to="wandb",
         run_name= cfg.wandb.exp_name
         )
     # data_collator = DataCollatorWithPadding(tokenizer,padding=True)
@@ -127,10 +134,11 @@ def train(cfg):
 
     ## train model
     trainer.train()
+    trainer.save_state()
     
     # ## save model
     # # model.save_model(cfg.model.saved_model)
-    torch.save(model.state_dict(),'/opt/ml/input/poc/CS/cs' + str(cfg.model.saved_model) + '.pt')
+    torch.save(model.state_dict(),str(cfg.model.saved_model) + '/Topic_segmentation.pt')
 
 
 if __name__ == '__main__':
@@ -143,7 +151,7 @@ if __name__ == '__main__':
 
     ## set seed
     seed_everything(cfg.train.seed)
-    wandb.login()
+
     wandb.init(project=cfg.wandb.project_name, entity=cfg.wandb.entity, name=cfg.wandb.exp_name)
 
     print('------------------- train start -------------------------')
