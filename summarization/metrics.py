@@ -26,8 +26,13 @@ def compute_metrics(eval_preds):
 
     # Some simple post-processing
     decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
+    # emb1 = model.encode(sample['Message'])  # R_i
+    # emb2 = model.encode(sample['Message2']) # R_i+1
+    # batch, max_seq,hidden
+    # batch,1 ,hidden -> 1 : 문장 전체를 뜻합니다. 
+    # cos [:,0,:]
 
-    result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)
+    result = metric.compute(predictions=decoded_preds, references=decoded_labels, use_stemmer=True)# util.cos_sim(emb1,emb2).diag()
     result = {k: round(v * 100, 4) for k, v in result.items()}
     prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
     result["gen_len"] = np.mean(prediction_lens)
