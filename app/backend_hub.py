@@ -3,12 +3,21 @@ from pydantic import BaseModel, Field
 from pymongo import MongoClient
 from uuid import UUID, uuid4
 from typing import List, Union, Optional, Dict, Any
+import pandas as pd 
 
 app = FastAPI()
 
 class User(BaseModel):
-    id : str
+    id : Optional[str] = None
     password : Optional[str] = None
+
+class Chatlist(BaseModel):
+    chat_room : str
+
+class Chat(BaseModel):
+    Date: str
+    User: str
+    Message: str
 
 @app.post('/login', description="user 정보를 가져옵니다.")
 def match_password(item : User):
@@ -23,8 +32,16 @@ def get_chatlist(item : User):
     for d in user_db['user_chat_join'].find({'user_id':item.id}):
         chat.append(d["chat_id"])
     return chat
-    
-    
+
+# 기간 설정이 여기 들어갈 수 있습니다.
+@app.post('/messages', description='채팅을 가져옵니다.')
+def get_chattings(item : Chatlist):
+    chat = []
+    for d in chat_db[item.chat_room].find():
+        chat.append({"Date":d['Date'],"User":d['User'],"Message":d['Message']})
+    return chat
+
+
 if __name__ == "__main__":
     import uvicorn
 
