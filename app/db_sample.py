@@ -1,6 +1,7 @@
 import streamlit as st
 from pymongo import MongoClient
 import requests
+import json
 
 st.set_page_config(layout="wide")
 
@@ -9,6 +10,7 @@ def main(chat):
     
 if __name__ == '__main__':
     root_password = "password"
+    match = False
     placeholder = st.empty()
     with placeholder.form(key='my_form'):
         user_id = st.text_input('user_id')
@@ -16,11 +18,13 @@ if __name__ == '__main__':
         submit = st.form_submit_button(label='제출') # True or False
         if submit:
             # TODO : back으로 옮기기
-            response = requests.get(f"http://127.0.0.1:30001/login/{user_id}")
-            root_password = eval(response.text)
-    if root_password == password:
+            id_password = {"id":user_id,"password":password}
+            response = requests.post("http://127.0.0.1:30001/login", data=json.dumps(id_password))
+            if response.text.lower() == 'true':
+                match = True
+    if match:
         root_password = "password"
         placeholder.empty()
-        response = requests.get(f"http://127.0.0.1:30001/chatlist/{user_id}")
+        response = requests.post("http://127.0.0.1:30001/chatlist", data=json.dumps(id_password))
         chat = eval(response.text)
         main(chat)
