@@ -8,6 +8,7 @@ from transformers import BartForConditionalGeneration, PreTrainedTokenizerFast, 
 from prediction import *
 import torch
 import numpy as np
+import pandas as pd
 # sys.path.append("../utils") # 부모 경로 추가하는 법 -> 이미 load_dataset.py에서 추가가 되었다.
 from postprocessing import postprocess
 
