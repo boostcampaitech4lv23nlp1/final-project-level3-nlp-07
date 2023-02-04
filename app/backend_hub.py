@@ -11,6 +11,9 @@ import requests
 from starlette.middleware.cors import CORSMiddleware
 from prediction import total_key_word_extraction
 app = FastAPI()
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -99,10 +102,10 @@ def make_keywords(item : DtsInput):
 
 
 @app.post('/dts')
-def make_dts(item : DtsInput):
+async def make_dts(item : DtsInput):
 
     print("item:",item)
-
+    # item = jsonable_encoder(item)
     chatroom = item.chat_room
     chat_dict = {"chat_room": chatroom}
     
@@ -125,16 +128,18 @@ def make_dts(item : DtsInput):
     # print(sample_dict)
     sample_dict["penalty"] = item.penalty
     ## bentoml url for api dts
-    url = 'http://0.0.0.0:5000/dts'
+    url = 'http://0.0.0.0:44001/dts'
 
     
     ## 추후 penalty가 들어온다면 바뀌어야할 부분
     ## json 으로 item + penalty가 들어가야함. dict에 "penalty" : List[str] 추가하면 됨.
     response = requests.post(url, json=sample_dict)
-    result = response.json()
+    result = jsonable_encoder(response.json())
 
     ## Json 객체로 return을 해주는데 ensure_ascii = False를 해주어야 json.dumps를 할 때 한글이 깨지지 않음
-    return json.dumps(result, ensure_ascii = False)
+    return JSONResponse(content =result, headers = {
+        "Access-Control-Allow-Origin": "http://127.0.0.1:5500"
+    })
 
 ## Todo: /summary
     ## Todo: 알맞는 timeline이 넘어옴
@@ -152,7 +157,7 @@ class SummaryInput(BaseModel):
 def make_summary(item : SummaryInput):
 
     ## bentoml url for api summary
-    url = 'http://0.0.0.0:5000/summarization'
+    url = 'http://0.0.0.0:44001/summarization'
 
     ## requests 보내기 위해 dict 객체로 바꿔줌
     sample = dict(item)
@@ -167,7 +172,7 @@ def make_summary(item : SummaryInput):
 if __name__ == "__main__":
     import uvicorn
 
-    client = MongoClient("")
+    client = MongoClient("mongodb+srv://superadmin:0214@cluster0.s2f3a.mongodb.net/test")
     user_db = client['User'] # Cluster0라는 이름의 데이터베이스에 접속
     chat_db = client["Chat"]
 
