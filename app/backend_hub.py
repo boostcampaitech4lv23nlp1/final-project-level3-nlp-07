@@ -136,7 +136,7 @@ def make_summary(item : SummaryInput):
 if __name__ == "__main__":
     import uvicorn
 
-    client = MongoClient("mongodb+srv://superadmin:0214@cluster0.s2f3a.mongodb.net/test")
+    client = MongoClient("")
     user_db = client['User'] # Cluster0라는 이름의 데이터베이스에 접속
     chat_db = client["Chat"]
 
