@@ -15,16 +15,14 @@ from postprocessing import postprocess
 @env(infer_pip_packages=True)
 @artifacts([
     TransformersModelArtifact('kobart_model'),
-    TransformersModelArtifact('bert_10'),
     PickleArtifact('cs_10'),
     TransformersModelArtifact('simcls')])
 class SummaryService(bentoml.BentoService):
     @api(input=JsonInput(), batch=False)
-    def dts(self, input):
-        dts_tokenizer = self.artifacts.bert_10.get("tokenizer")
-        bert_model = self.artifacts.bert_10.get("model")
+    def dts(self, inputs,penalty):
+        dts_tokenizer = self.artifacts.cs_10.get("tokenizer")
         cs_model = self.artifacts.cs_10.get("model")
-        timeline = get_DTS(bert_model, cs_model, dts_tokenizer, input)
+        timeline = get_DTS(cs_model, dts_tokenizer, inputs,penalty)
         return timeline
 
 
@@ -53,10 +51,12 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     dts_tokenizer = AutoTokenizer.from_pretrained('klue/bert-base')
-    dts_bert_model = BertModel.from_pretrained('/opt/ml/input/poc/BERT/bert_10').to(device)  
+    # dts_bert_model = BertModel.from_pretrained('/opt/ml/input/poc/BERT/bert_10').to(device)  
 
     dts_cs_model = CSModel()  
-    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/CS/cs10.pt'))
+
+    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/Domain_Topic_Sgmentation/Dialog_Topic_segmentation_v1/Domain_Topic_segmentor.pt'))
+
     dts_cs_model.to(device)  
 
     summary_tokenizer = PreTrainedTokenizerFast.from_pretrained("yeombora/dialogue_summarization", use_fast=True)
@@ -70,10 +70,10 @@ if __name__ == "__main__":
     artifact = {"model": summary_model, "tokenizer": summary_tokenizer}
     bento_svc.pack("kobart_model", artifact)
 
-    artifact = {"model" : dts_bert_model, "tokenizer" : dts_tokenizer}
-    bento_svc.pack("bert_10", artifact)
+    # artifact = {"model" : None , "tokenizer" : dts_tokenizer}
+    # bento_svc.pack("bert_10", artifact)
 
-    artifact = {"model" : dts_cs_model}
+    artifact = {"model" : dts_cs_model,  "tokenizer" : dts_tokenizer}
     bento_svc.pack("cs_10", artifact)
 
     artifact = {"model" : roberta_model, "tokenizer" : roberta_tokenizer}

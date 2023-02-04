@@ -8,6 +8,9 @@ from model import load_model_tokenizer
 from logger import set_logging
 from process_text import preprocess_function
 from metrics import compute_metrics
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["WANDB_DISABLED"] = "false"
 
 import torch
 import wandb

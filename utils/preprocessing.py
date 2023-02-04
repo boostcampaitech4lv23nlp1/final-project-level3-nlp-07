@@ -16,7 +16,7 @@ hate = sorted(hate_df["hate"], key=len, reverse=True)
 def id_check(my_id):                                            # 방장 봇이면 False, 일반 유저인 경우 True
     if my_id == "방장봇":
         return False
-    
+
     return True
 
 def text_processing(dialog):                                    # Text 전처리 작업
@@ -28,13 +28,13 @@ def text_processing(dialog):                                    # Text 전처리
 
     if len(dialog) == 0:
         return False
-    
+
     if dialog == "삭제된 메시지입니다." or dialog == "채팅방 관리자가 메시지를 가렸습니다.":
         return False
 
     if "님이 나갔습니다." == dialog[-9:] or "님이 들어왔습니다." == dialog[-10:] or "저장한 날짜 : " in dialog:
         return False
-    
+
     if dialog == "이모티콘" or dialog == "사진" or dialog == "카카오톡 프로필" or dialog == "음성메시지" or dialog == "보이스룸이 방금 시작했어요." or \
     dialog[:7] == "보이스룸 종료" or dialog[:7] == "라이브톡 종료" or dialog[:7] == "라이브톡 시작":
         return False
@@ -84,11 +84,11 @@ def same(df):                                                   # 한 사람이 
         if before_id == row["User"]:
             df.loc[index, "same_id"] = False
             df.loc[idx, "Message"] += " " + df.loc[index, "Message"]
-        
+
         else:
             before_id = row["User"]
             idx = index
-    
+
     df = df[df["same_id"] == True][["index","Date", "User", "Message"]].reset_index(drop=True)
 
     return df
@@ -130,4 +130,5 @@ def _preprocess(new_df):
     return df
 
 # df.to_csv(output_path + "train.csv", index=False)
+
 
