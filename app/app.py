@@ -9,61 +9,60 @@ from datetime import timedelta
 from prediction import *
 import bentoml
 from pymongo import MongoClient
+import json
 
 
 
 st.set_page_config(layout="wide")
 
-root = 'http://0.0.0.0:8001/'
+# root = 'http://0.0.0.0:8001/'
 
-bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230202015126_8AA47D'
+# bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230204195244_A220F5'
 
-bento_svc = bentoml.load(bentoml_path)
+# bento_svc = bentoml.load(bentoml_path)
 
-def get_now(start_date, time_period, df):    
-    df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)
-    sample = df[df['Date'].isin(pd.date_range(str(start_date), str(start_date + timedelta(days=time_period)),freq = 's'))]
-    return sample
+# def get_now(start_date, time_period, df):    
+#     df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)
+#     sample = df[df['Date'].isin(pd.date_range(str(start_date), str(start_date + timedelta(days=time_period)),freq = 's'))]
+#     return sample
 
-def txt_to_csv(uploaded_file, encoding):
-    ymd_format = '\d{4}년 \d{1,2}월 \d{1,2}일'
-    raw_data = []
-    for r in uploaded_file.getvalue().decode(encoding).splitlines():
-        raw_date = re.findall(ymd_format, r)
-        if len(raw_date)>0:
-            idx_date='-'.join([d if len(d)>1 else '0'+d for d in re.findall('\d+',raw_date[0])])
-        else:
-            raw_sentence = r.replace('\n','').replace('[','').split(']')
-            if len(raw_sentence)>1:
-                try:
-                    pmam, hm = raw_sentence[1].lstrip().split()
-                    if pmam == '오전':
-                        pmam = 'AM'
-                    else:
-                        pmam = 'PM'
-                    hm = hm +':00'
-                    if len(hm)<8:
-                        hm = '0'+hm
-                    fin_date=' '.join([idx_date,hm,pmam])
-                    raw_data.append([fin_date,raw_sentence[0].strip(),raw_sentence[2].lstrip()])
-                except:
-                    pass
-    fin_pd = pd.DataFrame(raw_data,columns=['Date','User','Message'])
-    return fin_pd
+# def txt_to_csv(uploaded_file, encoding):
+#     ymd_format = '\d{4}년 \d{1,2}월 \d{1,2}일'
+#     raw_data = []
+#     for r in uploaded_file.getvalue().decode(encoding).splitlines():
+#         raw_date = re.findall(ymd_format, r)
+#         if len(raw_date)>0:
+#             idx_date='-'.join([d if len(d)>1 else '0'+d for d in re.findall('\d+',raw_date[0])])
+#         else:
+#             raw_sentence = r.replace('\n','').replace('[','').split(']')
+#             if len(raw_sentence)>1:
+#                 try:
+#                     pmam, hm = raw_sentence[1].lstrip().split()
+#                     if pmam == '오전':
+#                         pmam = 'AM'
+#                     else:
+#                         pmam = 'PM'
+#                     hm = hm +':00'
+#                     if len(hm)<8:
+#                         hm = '0'+hm
+#                     fin_date=' '.join([idx_date,hm,pmam])
+#                     raw_data.append([fin_date,raw_sentence[0].strip(),raw_sentence[2].lstrip()])
+#                 except:
+#                     pass
+#     fin_pd = pd.DataFrame(raw_data,columns=['Date','User','Message'])
+#     return fin_pd
 
-def form_return(uploaded_file, start_date, time_period):
-    # chardet 라이브러리로 인코딩 확인 후 맞춰서 encoding, csv와 txt의 getvalue() 형식이 다르다.
-    if uploaded_file.name.split('.')[-1]=='csv':
-        encoder_type = chardet.detect(uploaded_file.getvalue())['encoding']
-        df = pd.read_csv(uploaded_file, encoding=encoder_type) # 2가지 케이스만 한거라 에러를 만들어 보는걸 추천
-    else:
-        encoder_type = chardet.detect(uploaded_file.getvalue().splitlines()[0])['encoding']
-        df = txt_to_csv(uploaded_file, encoding=encoder_type)
-    df = df.reset_index()
-    sample = get_now(start_date,time_period, df)   # data 크기 감소
-    return sample
-
-
+# def form_return(uploaded_file, start_date, time_period):
+#     # chardet 라이브러리로 인코딩 확인 후 맞춰서 encoding, csv와 txt의 getvalue() 형식이 다르다.
+#     if uploaded_file.name.split('.')[-1]=='csv':
+#         encoder_type = chardet.detect(uploaded_file.getvalue())['encoding']
+#         df = pd.read_csv(uploaded_file, encoding=encoder_type) # 2가지 케이스만 한거라 에러를 만들어 보는걸 추천
+#     else:
+#         encoder_type = chardet.detect(uploaded_file.getvalue().splitlines()[0])['encoding']
+#         df = txt_to_csv(uploaded_file, encoding=encoder_type)
+#     df = df.reset_index()
+#     sample = get_now(start_date,time_period, df)   # data 크기 감소
+#     return sample
 
 def main(chat):
     st.title("오픈 채팅방 요약 서비스")
@@ -80,13 +79,25 @@ def main(chat):
 
         if 'ss' in st.session_state:
             # tokenizer의 경우 hash가 불가했음, unknown object type
-            sample = form_return(uploaded_file, start_date, time_period)
+            # st.write(type(start_date),type(time_period),type(penalty))
+            # st.write(start_date, str(start_date), penalty)
+            
+            # sample = form_return(uploaded_file, start_date, time_period)
             placeholder.empty()
-            if len(sample) <100:
-                st.warning('데이터가 충분하지 않습니다. 대화 시점과 기간을 확인해주세요.')
+            # if len(sample) <100:
+            #     st.warning('데이터가 충분하지 않습니다. 대화 시점과 기간을 확인해주세요.')
             with st.spinner('선택하신 기간으로 적절한 주제를 찾고 있습니다...'): # with 아래 까지 실행되는 동안 동그라미를 띄운다.
                 # api로 날릴수 있는 부분 -> backend에 요청할 부분!
-                items = bento_svc.dts(sample,penalty)
+                DTS_input = {
+                    "chat_room": "KakaoTalk_Chat_IT개발자 구직_채용 정보교류방",
+                    "start_date": "2023-01-11",
+                    "time_period": "1",
+                    "penalty": ["채용","취업"]
+                    }
+                #st.write(DTS_input)
+                response = requests.post("http://localhost:30001/dts", json = DTS_input)
+                # st.write(response.json())
+                items = json.loads(response.json())
                 st.success('완료')
                 st.session_state['items'] = items
         # timeline = None # 지역변수니까!
@@ -94,19 +105,22 @@ def main(chat):
     if 'items' in st.session_state: # 키를 나열해요 st.session_State = [key1, key2]
         st.session_state['timeline'] = st_timeline(st.session_state['items'], groups=[], options={}, height="500px")             # DTS 시각화
         # https://github.com/giswqs/streamlit-timeline/blob/master/streamlit_timeline/__init__.py 
+        # timeline의 형태 {"start": "2023-01-11 01:42:22", "due": "2023-01-11 08:17:14", "content": "여기", "dialogue": ""}
         timeline = st.session_state['timeline']
-        cls = st.columns([0.3,0.7],gap ='small') # 화면 분할 레이어 3개로 
+        cls = st.columns([0.3,0.7],gap ='small') # 화면 분할 레이어 3개로
+        # st.write(timeline)
+        # st.write(type(timeline)) 
         with cls[1]:
             # else:
             #     st.warning("items not available")
             if timeline is not None:
                 with st.spinner('대화를 요약 중 입니다..'):
-                    response = bento_svc.summarization(timeline)
+                    response2 = requests.post("http://localhost:30001/summary", json = timeline)
                     tab1, tab2,tab3 = st.tabs(["요약 결과", "결과 원문 보기",'종료하기'])
                     summary = tab1.text_area('요약 결과',f'''
     '{timeline['content']}'에 관한 {timeline['start'][:-3]}부터 {timeline['due'][:-3]}까지의 채팅 요약입니다.
 
-    {response}
+    {response2.json()}
 
 
     YOUMbora는 당신의 채팅방이 더욱 원활하게 활용될 수 있도록 노력하고 있습니다. 
