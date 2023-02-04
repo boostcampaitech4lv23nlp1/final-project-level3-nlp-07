@@ -25,7 +25,9 @@ class SummaryService(bentoml.BentoService):
         dts_tokenizer = self.artifacts.bert_10.get("tokenizer")
         bert_model = self.artifacts.bert_10.get("model")
         cs_model = self.artifacts.cs_10.get("model")
-        timeline = get_DTS(bert_model, cs_model, dts_tokenizer, input)
+        ## get_DTS 함수 형식에 맞추기 위해 input_df를 DataFrame 형태로 바꿈
+        input_df = pd.DataFrame.from_dict(input)
+        timeline = get_DTS(bert_model, cs_model, dts_tokenizer, input_df)
         return timeline
 
     @api(input=JsonInput(), batch=False)
