@@ -38,6 +38,6 @@ huggingface :
   push_to_hub: True
   hub_private_repo: False
   push_to_hub_organization: yeombora
-  hub_token: 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
+  hub_token: 
   hub_model_id : Dialog_Topic_segmentation
 

@@ -133,7 +133,7 @@ def main(chat):
 
 # TODO : REQUEST
 if __name__ == '__main__':
-    # client = MongoClient("mongodb+srv://superadmin:0214@cluster0.s2f3a.mongodb.net/test")
+
     # user_db = client['User'] # Cluster0라는 이름의 데이터베이스에 접속
     # chat_db = client["Chat"]
     # root_password = "0000"
