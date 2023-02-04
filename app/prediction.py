@@ -113,7 +113,7 @@ def predict_summary(inputs):
     return f'요약 결과 : {output}'
 
 def key_word_extraction(inputs,penalty):
-    PATH = '/opt/ml/input/final-project-level3-nlp-07/utils/stopword.txt'
+    PATH = '/opt/ml/input/frontend_Backend_test/final-project-level3-nlp-07/utils/stopword.txt'
     text = [re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]|[\n]|(@[A-Za-z0-9]+)|(\w+:\/\/\S+)", " ",sent) for sent in inputs]
     with open(PATH,'r') as f:
         words= f.read()
@@ -124,3 +124,16 @@ def key_word_extraction(inputs,penalty):
     key_word,sent= summarize_with_sentences(text, min_count=3, max_length=10,stopwords = stopwords,penalty=pnlty,
                                             beta=0.85, max_iter=10, verbose=False)
     return ' #' + ' #'.join(list(key_word.keys())[:3])
+
+def total_key_word_extraction(inputs,penalty):
+    PATH = '/opt/ml/input/frontend_Backend_test/final-project-level3-nlp-07/utils/stopword.txt'
+    text = [re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]|[\n]|(@[A-Za-z0-9]+)|(\w+:\/\/\S+)", " ",sent) for sent in inputs]
+    with open(PATH,'r') as f:
+        words= f.read()
+    stopwords = words.split('\n')
+    stopwords = {words for words in stopwords}
+    # pos = ['채용', '취업', '코테', '인공지능', 'AI','알고리즘','면접','대기업', 'IT기업', 'IT', 'ML','DL','CNN', 'RNN', 'CV', 'NLP','Recsys']
+    pnlty = lambda x:0 if any(word in x.split() for word in penalty) else 1
+    key_word,sent= summarize_with_sentences(text, min_count=3, max_length=10,stopwords = stopwords,penalty=pnlty,
+                                            beta=0.85, max_iter=10, verbose=False)
+    return [(k,v) for k, v in key_word.items()][:5]

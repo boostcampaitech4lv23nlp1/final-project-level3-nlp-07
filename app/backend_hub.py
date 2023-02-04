@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import time
 import requests
 from starlette.middleware.cors import CORSMiddleware
+from prediction import total_key_word_extraction
 app = FastAPI()
 
 app.add_middleware(
@@ -80,6 +81,22 @@ class DtsInput(BaseModel):
     start_date : str ## or datetime, 아마 string일 듯
     time_period : str
     penalty : List[str]
+
+@app.post('/keywords')
+def make_keywords(item : DtsInput):
+    
+    chatroom = item.chat_room
+    chat_dict = {"chat_room": chatroom}
+    
+    ## chat_dict를 활용하여 DB에 접근해 chattings를 가져옴
+    chat = get_chattings(chat_dict)
+    chat_df = pd.DataFrame(chat).reset_index()
+    chat_message = chat_df["Message"].tolist()
+
+    result = total_key_word_extraction(chat_message, item.penalty)
+
+    return result
+
 
 @app.post('/dts')
 def make_dts(item : DtsInput):
