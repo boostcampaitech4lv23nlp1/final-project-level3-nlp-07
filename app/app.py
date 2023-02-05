@@ -14,56 +14,6 @@ import json
 
 
 st.set_page_config(layout="wide")
-
-# root = 'http://0.0.0.0:8001/'
-
-# bentoml_path = '/opt/ml/bentoml/repository/SummaryService/20230204195244_A220F5'
-
-# bento_svc = bentoml.load(bentoml_path)
-
-# def get_now(start_date, time_period, df):    
-#     df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)
-#     sample = df[df['Date'].isin(pd.date_range(str(start_date), str(start_date + timedelta(days=time_period)),freq = 's'))]
-#     return sample
-
-# def txt_to_csv(uploaded_file, encoding):
-#     ymd_format = '\d{4}년 \d{1,2}월 \d{1,2}일'
-#     raw_data = []
-#     for r in uploaded_file.getvalue().decode(encoding).splitlines():
-#         raw_date = re.findall(ymd_format, r)
-#         if len(raw_date)>0:
-#             idx_date='-'.join([d if len(d)>1 else '0'+d for d in re.findall('\d+',raw_date[0])])
-#         else:
-#             raw_sentence = r.replace('\n','').replace('[','').split(']')
-#             if len(raw_sentence)>1:
-#                 try:
-#                     pmam, hm = raw_sentence[1].lstrip().split()
-#                     if pmam == '오전':
-#                         pmam = 'AM'
-#                     else:
-#                         pmam = 'PM'
-#                     hm = hm +':00'
-#                     if len(hm)<8:
-#                         hm = '0'+hm
-#                     fin_date=' '.join([idx_date,hm,pmam])
-#                     raw_data.append([fin_date,raw_sentence[0].strip(),raw_sentence[2].lstrip()])
-#                 except:
-#                     pass
-#     fin_pd = pd.DataFrame(raw_data,columns=['Date','User','Message'])
-#     return fin_pd
-
-# def form_return(uploaded_file, start_date, time_period):
-#     # chardet 라이브러리로 인코딩 확인 후 맞춰서 encoding, csv와 txt의 getvalue() 형식이 다르다.
-#     if uploaded_file.name.split('.')[-1]=='csv':
-#         encoder_type = chardet.detect(uploaded_file.getvalue())['encoding']
-#         df = pd.read_csv(uploaded_file, encoding=encoder_type) # 2가지 케이스만 한거라 에러를 만들어 보는걸 추천
-#     else:
-#         encoder_type = chardet.detect(uploaded_file.getvalue().splitlines()[0])['encoding']
-#         df = txt_to_csv(uploaded_file, encoding=encoder_type)
-#     df = df.reset_index()
-#     sample = get_now(start_date,time_period, df)   # data 크기 감소
-#     return sample
-
 def main(chat):
     st.title("오픈 채팅방 요약 서비스")
     if 'items' not in st.session_state:
@@ -169,4 +119,4 @@ if __name__ == '__main__':
     #             chat.append(d["chat_id"])
     # if st.session_state.get('root_password') == password:
         # main(cat) 
-    main([])
+    main(["IT 개발자 구직 채용 정보교류방","IT개발자 연봉공유","데이터사이언스, AI 개발자"])
