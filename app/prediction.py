@@ -60,14 +60,6 @@ def inference_DTS(validation_dataloader, cs_model):
     # label  = [0,0,0,0,0,0,0,1,0,0,0,0,0,1]
     return label
 
-# dialogue에서 keyword 뽑아주는 부분
-def keyword_extractor(dialogue):
-    # nltk로 명사군의 단어들만 뽑아보기
-    to_keywords = [i for i,p in pos_tag(word_tokenize(' '.join(dialogue))) \
-                                                    if len(i)>1 and p[:2]=='NN' and i !='..']
-    keyword, freq = collections.Counter(to_keywords).most_common(1)[0]
-    # TODO : 다른 키워드 처리 방법 찾아보기
-    return keyword
 
 def get_timeline(df,label,raw_df,penalty):
     timeline = []
@@ -100,7 +92,7 @@ def get_DTS(cs_model,tokenizer,inputs,penalty):
     inference_dataloader = DataLoader(inference_set, sampler=inference_sampler, batch_size=32,collate_fn=data_collator)
     label = inference_DTS(inference_dataloader,cs_model)
     timeline = get_timeline(df = inference_processed, label = label, raw_df = inputs,penalty=penalty)
-    return timeline
+    return timeline, len(inputs)
 
 def get_summary_input(input):
     dialogue = input["dialogue"]

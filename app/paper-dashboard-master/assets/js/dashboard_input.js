@@ -1,6 +1,42 @@
 let slider = document.querySelector(".slider");
 let sliderValue = document.querySelector(".slider-value");
+const url = 'http://127.0.0.1:30001';
 
+
+$(document).ready(function(){
+  $('ul.tabs li').click(function(){
+      var tab_id = $(this).attr('data-tab');
+
+      $('ul.tabs li').removeClass('current');
+      $('.tab-content').removeClass('current');
+
+      $(this).addClass('current');
+      $("#"+tab_id).addClass('current');
+  });
+});
+
+
+function postData(url = '', data = {}) {
+  const response = fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8'
+    },
+    body: JSON.stringify(data)
+  //   redirect : 'follow',
+  //   referrerPolicy : 'same-origin'
+  }).then((res) => {
+      if (res.status === 200) {
+          return res.json();
+      } else if (res.status === 422) {
+          console.log('여기가 입력이 뭘까 궁금한 부분')
+          console.log(res)
+          alret('분석 실패... 다시 시도해 주세요.')
+      }
+  }
+  )
+  return response;
+};
 slider.addEventListener("input", function() {
   sliderValue.innerHTML = this.value;
   });
@@ -9,15 +45,18 @@ var options = ["Option 1", "Option 2", "Option 3", "Option 4"];
 
 // 입력 받은 옵션을 기준으로 입력 옵션 생성
 const select = document.getElementById("selchat");
-
-for (var i = 0; i < options.length; i++) {
-  var opt = options[i];
-  var el = document.createElement("option");
-  el.textContent = opt;
-  el.value = opt;
-  select.appendChild(el);
-};
-console.log(select)
+let sel_chat = postData(url+'/chatlist', data ={"user_id" : "jaeuk", "password" : "1"})
+.then((data) => {
+  console.log(data)
+    for (var i = 0; i < data['result'].length; i++) {
+      console.log(data['result'][i])
+      var opt = data['result'][i];
+      var el = document.createElement("option");
+      el.textContent = opt;
+      el.value = opt;
+      select.appendChild(el);
+    };
+  })
 
 
 // 키값 생성 구조

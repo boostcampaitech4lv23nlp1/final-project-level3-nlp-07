@@ -34,6 +34,9 @@ Coded by www.creative-tim.com
   <!-- CSS Just for demo purpose, don't include it in your project -->
   <link href="../assets/demo/demo.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.1/dist/echarts.min.js"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/timeline.js"></script>
+  <script src="https://code.highcharts.com/modules/series-label.js"></script>
   <!-- CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
 
@@ -57,6 +60,7 @@ Coded by www.creative-tim.com
 
   <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
   <!-- <style>
     .checkbox-group input[type="checkbox"] {
         display: inline-block;
@@ -65,6 +69,37 @@ Coded by www.creative-tim.com
   </style> -->
   <style type="text/css">
     @import url("../assets/css/ckbox.css");
+    #charts {
+        min-width: 400px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    ul.tabs{
+      margin : 0px;
+      padding : 0px;
+      list-style: none;
+    }
+    
+    ul.tabs li {
+      display: inline-block;
+      padding : 10px 15px;
+      cursor: pointer;
+    }
+    ul.tabs li.current {
+      background: #ededed;
+      display: inline-block;
+      padding : 10px 15px;
+      cursor: pointer;
+    }
+
+    .tab-content{
+      display: none;
+      padding: 15px;
+    }
+    .tab-content.current{
+      display: inherit;
+    }
+    
 </style>
 </head>
 
@@ -348,9 +383,111 @@ Coded by www.creative-tim.com
           </div>
         </div>
       <!-- </form> -->
-    </form>
-      <div class="form-output">
-        <!-- Form output will be displayed here -->
+      <div class="row">
+        <div class="col-lg-3 col-md-6 col-sm-6">
+          <div class="card card-stats">
+            <div class="card-body ">
+              <div class="row">
+                <div class="col-5 col-md-4">
+                  <div class="icon-big text-center icon-warning">
+                    <i class="nc-icon nc-globe text-warning"></i>
+                  </div>
+                </div>
+                <div class="col-7 col-md-8">
+                  <div class="numbers">
+                    <p class="card-category">총 대화 수</p>
+                    <p class="card-title">1500<p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer ">
+              <!-- <hr>
+              <div class="stats">
+                <i class="fa fa-refresh"></i>
+                Update Now
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6">
+          <div class="card card-stats">
+            <div class="card-body ">
+              <div class="row">
+                <div class="col-5 col-md-4">
+                  <div class="icon-big text-center icon-warning">
+                    <i class="nc-icon nc-money-coins text-success"></i>
+                  </div>
+                </div>
+                <div class="col-7 col-md-8">
+                  <div class="numbers">
+                    <p class="card-category">요약 대화 수</p>
+                    <p class="card-title">500<p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer ">
+              <!-- <hr>
+              <div class="stats">
+                <i class="fa fa-calendar-o"></i>
+                Last day
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6">
+          <div class="card card-stats">
+            <div class="card-body ">
+              <div class="row">
+                <div class="col-5 col-md-4">
+                  <div class="icon-big text-center icon-warning">
+                    <i class="nc-icon nc-vector text-danger"></i>
+                  </div>
+                </div>
+                <div class="col-7 col-md-8">
+                  <div class="numbers">
+                    <p class="card-category">대화량 감소 비율</p>
+                    <p class="card-title">33%<p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer ">
+              <!-- <hr>
+              <div class="stats">
+                <i class="fa fa-clock-o"></i>
+                In the last hour
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 col-sm-6">
+          <div class="card card-stats">
+            <div class="card-body ">
+              <div class="row">
+                <div class="col-5 col-md-4">
+                  <div class="icon-big text-center icon-warning">
+                    <i class="nc-icon nc-favourite-28 text-primary"></i>
+                  </div>
+                </div>
+                <div class="col-7 col-md-8">
+                  <div class="numbers">
+                    <p class="card-category">Followers</p>
+                    <p class="card-title">+45K<p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer ">
+              <!-- <hr>
+              <div class="stats">
+                <i class="fa fa-refresh"></i>
+                Update now
+              </div> -->
+            </div>
+          </div>
+        </div>
       </div>
     
         <div class="row">
@@ -359,16 +496,16 @@ Coded by www.creative-tim.com
               <div class="card-header ">
                 <h5 class="card-title">타임라인 키워드</h5>
               </div>
-              <div class="card-body">
-                <canvas id="charts"></canvas>
+              <div class="card-body" style="height:280px; width: 1000px;">
+                <div id="charts" ></div>
                 <!-- <canvas id=chartHours></canvas> -->
               </div>
-              <!-- <div class="card-footer ">
-                <hr>
+              <!-- <div class="card-footer "> -->
+                <!-- <hr>
                 <div class="stats">
                   <i class="fa fa-history"></i> Updated 3 minutes ago
-                </div>
-              </div> -->
+                </div> -->
+              <!-- </div> -->
             </div>
           </div>
           <div class="col-md-4">
@@ -391,129 +528,22 @@ Coded by www.creative-tim.com
         </div>
         <div class="row">
           <div class="col-md-12">
+
             <div class="card card-chart">
               <div class="card-header">
-                <h5 class="card-title">요약 결과</h5>
-                <p class="card-category">Line Chart with Points</p>
+                <ul class="tabs">
+                  <li class="tab-link current" data-tab="summary">요약 결과</li>
+                  <li class="tab-link" data-tab="rawdata">원문 내용 보기</li>
+                </ul>
             </div>
             <div class="card-body">
-              <div id="summary" width="700" height="200"></div>
-
+              <div class="tab-content current" id="summary" width="700" height="200"></div>
+              <div class="tab-content" id="rawdata" width="700" height="200"></div>
             </div>
               <div class="card-footer">
-                <div class="chart-legend">
-                  <i class="fa fa-circle text-info"></i> Tesla Model S
-                  <i class="fa fa-circle text-warning"></i> BMW 5 Series
-                </div>
                 <!-- <hr />
                 <div class="card-stats">
                   <i class="fa fa-check"></i> Data information certified
-                </div> -->
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-3 col-md-6 col-sm-6">
-            <div class="card card-stats">
-              <div class="card-body ">
-                <div class="row">
-                  <div class="col-5 col-md-4">
-                    <div class="icon-big text-center icon-warning">
-                      <i class="nc-icon nc-globe text-warning"></i>
-                    </div>
-                  </div>
-                  <div class="col-7 col-md-8">
-                    <div class="numbers">
-                      <p class="card-category">총 대화 수</p>
-                      <p class="card-title">1500<p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-footer ">
-                <!-- <hr>
-                <div class="stats">
-                  <i class="fa fa-refresh"></i>
-                  Update Now
-                </div> -->
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6 col-sm-6">
-            <div class="card card-stats">
-              <div class="card-body ">
-                <div class="row">
-                  <div class="col-5 col-md-4">
-                    <div class="icon-big text-center icon-warning">
-                      <i class="nc-icon nc-money-coins text-success"></i>
-                    </div>
-                  </div>
-                  <div class="col-7 col-md-8">
-                    <div class="numbers">
-                      <p class="card-category">요약 대화 수</p>
-                      <p class="card-title">500<p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-footer ">
-                <!-- <hr>
-                <div class="stats">
-                  <i class="fa fa-calendar-o"></i>
-                  Last day
-                </div> -->
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6 col-sm-6">
-            <div class="card card-stats">
-              <div class="card-body ">
-                <div class="row">
-                  <div class="col-5 col-md-4">
-                    <div class="icon-big text-center icon-warning">
-                      <i class="nc-icon nc-vector text-danger"></i>
-                    </div>
-                  </div>
-                  <div class="col-7 col-md-8">
-                    <div class="numbers">
-                      <p class="card-category">대화량 감소 비율</p>
-                      <p class="card-title">33%<p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-footer ">
-                <!-- <hr>
-                <div class="stats">
-                  <i class="fa fa-clock-o"></i>
-                  In the last hour
-                </div> -->
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-6 col-sm-6">
-            <div class="card card-stats">
-              <div class="card-body ">
-                <div class="row">
-                  <div class="col-5 col-md-4">
-                    <div class="icon-big text-center icon-warning">
-                      <i class="nc-icon nc-favourite-28 text-primary"></i>
-                    </div>
-                  </div>
-                  <div class="col-7 col-md-8">
-                    <div class="numbers">
-                      <p class="card-category">Followers</p>
-                      <p class="card-title">+45K<p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-footer ">
-                <!-- <hr>
-                <div class="stats">
-                  <i class="fa fa-refresh"></i>
-                  Update now
                 </div> -->
               </div>
             </div>
@@ -550,29 +580,137 @@ Coded by www.creative-tim.com
   <!-- Control Center for Now Ui Dashboard: parallax effects, scripts for the example pages etc -->
   <!-- <script src="../assets/js/paper-dashboard.min.js?v=2.0.1" type="text/javascript"></script>Paper Dashboard DEMO methods, don't include it in your project!
   <script src="../assets/demo/demo.js"></script> -->
-  <script>
-    $(document).ready(function() {
-      console.log('page open...')
-      // Javascript method's body can be found in assets/assets-for-demo/js/demo.js
-      // demo.initChartsPages();
-      // $('.dropdown-toggle').dropdown();
-      var options = ["KakaoTalk_Chat_IT개발자 구직_채용 정보교류방", "Option 2", "Option 3", "Option 4"];
-      
-      var select = document.getElementById("selchat");
-      // $("select_room").selectpicker('val', 'Click');
-      
-      for (var i = 0; i < options.length; i++) {
-        var opt = options[i];
-        var el = document.createElement("option");
-        el.textContent = opt;
-        el.value = opt;
-        select.appendChild(el);
-      }
-    });
-  </script> 
 
 </body>
 <!-- 대시보드 입력 시각화 -->
+<script>
+//   $('document').ready(function(){
+//     var timeline_data = [{
+//             x: Date.UTC(1951, 5, 22),
+//             name: 'First dogs in space',
+//             label: 'First',
+//             description: 'Dezik and Tsygan were the first dogs to make a sub-orbital flight on 22 July 1951. Both dogs were recovered unharmed after travelling to a maximum altitude of 110 km.'
+//         }, {
+//             x: Date.UTC(1957, 9, 4),
+//             name: 'First artificial satellite',
+//             label: 'First artificial satellite',
+//             description: 'Sputnik 1 was the first artificial Earth satellite. The Soviet Union launched it into an elliptical low Earth orbit on 4 October 1957, orbiting for three weeks before its batteries died, then silently for two more months before falling back into the atmosphere.'
+//         }, {
+//             x: Date.UTC(1959, 0, 4),
+//             name: 'First artificial satellite to reach the Moon',
+//             label: 'First artificial satellite to reach the Moon',
+//             description: 'Luna 1 was the first artificial satellite to reach the Moon vicinity and first artificial satellite in heliocentric orbit.'
+//         }, {
+//             x: Date.UTC(1961, 3, 12),
+//             name: 'First human spaceflight',
+//             label: 'First human spaceflight',
+//             description: 'Yuri Gagarin was a Soviet pilot and cosmonaut. He became the first human to journey into outer space when his Vostok spacecraft completed one orbit of the Earth on 12 April 1961.'
+//         }, {
+//             x: Date.UTC(1966, 1, 3),
+//             name: 'First soft landing on the Moon',
+//             label: 'First soft landing on the Moon',
+//             description: 'Yuri Gagarin was a Soviet pilot and cosmonaut. He became the first human to journey into outer space when his Vostok spacecraft completed one orbit of the Earth on 12 April 1961.'
+//         }, {
+//             x: Date.UTC(1969, 6, 20),
+//             name: 'First human on the Moon',
+//             label: 'First human on the Moon',
+//             description: 'Apollo 11 was the spaceflight that landed the first two people on the Moon. Commander Neil Armstrong and lunar module pilot Buzz Aldrin, both American, landed the Apollo Lunar Module Eagle on July 20, 1969, at 20:17 UTC.'
+//         }, {
+//             x: Date.UTC(1971, 3, 19),
+//             name: 'First space station',
+//             label: 'First space station',
+//             description: 'Salyute 1 was the first space station of any kind, launched into low Earth orbit by the Soviet Union on April 19, 1971. The Salyut program followed this with five more successful launches out of seven more stations.'
+//         }, {
+//             x: Date.UTC(1971, 11, 2,18,20),
+//             name: 'First soft Mars landing',
+//             label: 'First soft Mars landing',
+//             description: 'Mars 3 was an unmanned space probe of the Soviet Mars program which spanned the years between 1960 and 1973. Mars 3 was launched May 28, 1971, nine days after its twin spacecraft Mars 2. The probes were identical robotic spacecraft launched by Proton-K rockets with a Blok D upper stage, each consisting of an orbiter and an attached lander.'
+//         }, {
+//             x: Date.UTC(1971, 11, 2,20,20),
+//             name: 'Closest flyby of the Sun',
+//             label: 'Closest flyby of the Sun',
+//             description: 'Helios-A and Helios-B (also known as Helios 1 and Helios 2) are a pair of probes launched into heliocentric orbit for the purpose of studying solar processes. A joint venture of West Germany\'s space agency DFVLR (70 percent share) and NASA (30 percent), the probes were launched from Cape Canaveral Air Force Station, Florida.'
+//         }, {
+//             x: Date.UTC(1978, 11, 4),
+//             name: 'First orbital exploration of Venus',
+//             label: 'First orbital exploration of Venus',
+//             description: 'The Pioneer Venus Orbiter entered orbit around Venus on December 4, 1978, and performed observations to characterize the atmosphere and surface of Venus. It continued to transmit data until October 1992.'
+//         }, {
+//             x: Date.UTC(1986, 1, 19),
+//             name: 'First inhabited space station',
+//             label: 'First inhabited space station',
+//             description: 'was a space station that operated in low Earth orbit from 1986 to 2001, operated by the Soviet Union and later by Russia. Mir was the first modular space station and was assembled in orbit from 1986 to 1996. It had a greater mass than any previous spacecraft.'
+//         }, {
+//             x: Date.UTC(1989, 7, 8),
+//             name: 'First astrometric satellite',
+//             label: 'First astrometric satellite',
+//             description: 'Hipparcos was a scientific satellite of the European Space Agency (ESA), launched in 1989 and operated until 1993. It was the first space experiment devoted to precision astrometry, the accurate measurement of the positions of celestial objects on the sky.'
+//         }, {
+//             x: Date.UTC(1998, 10, 20),
+//             name: 'First multinational space station',
+//             label: 'First multinational space station',
+//             description: 'The International Space Station (ISS) is a space station, or a habitable artificial satellite, in low Earth orbit. Its first component was launched into orbit in 1998, with the first long-term residents arriving in November 2000.[7] It has been inhabited continuously since that date.'
+//         }];
+//         console.log(timeline_data.length)
+//   Highcharts.chart('charts', {
+//     chart: {
+//         zoomType: 'x',
+//         type: 'timeline'
+//     },
+//     zooming :{
+//     	type : "x"
+//     },
+//     xAxis: {
+//     type: 'datetime',
+//     visible: false
+// },
+
+//     yAxis: {
+//         gridLineWidth: 1,
+//         visible: false,
+//         title: null,
+//         labels: {
+//             enabled: true
+//         }
+//     }, 
+//     legend: {
+//         enabled: true
+//     },
+//     title: {
+//         text: 'Timeline of OpenTalk'
+//     },
+//     subtitle: {
+//         text: 'Info source: <a href="https://en.wikipedia.org/wiki/Timeline_of_space_exploration">www.wikipedia.org</a>'
+//     },
+//     tooltip: {
+//       style: {
+//             width: 300
+//         },
+//       xDateFormat: '%A, %b %e, %H:%M:%S',
+//       dateTimeLabelFormats: {
+//         second: '%H:%M:%S'
+//       }
+//   },
+//     series: [{
+//         dataLabels: {
+//             allowOverlap: true,
+//             format: '<span style="color:{point.color}">● </span><span style="font-weight: bold;" > ' +
+//                 '{point.name}</span><br/>{point.x:%d %b %Y}'
+//         },
+//       events:{  // 이벤트
+//          click: function (event){ // 클릭이벤트 
+//               console.log(event.point.name);
+//          }
+//         },
+//         marker: {
+//             symbol: 'circle'
+//         },
+//         data: timeline_data
+//     }]
+//   });
+//   })
+  
+</script>
 <script src="../assets/js/dashboard_input.js"></script>
 <!-- timeline 시각화 하는거  -->
 <script src="../assets/js/get_timeline.js"></script>

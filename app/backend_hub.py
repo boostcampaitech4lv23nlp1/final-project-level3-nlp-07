@@ -1,18 +1,16 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
 from pymongo import MongoClient
 from uuid import UUID, uuid4
-from typing import List, Union, Optional, Dict, Any
 import pandas as pd 
 import json
 from datetime import datetime, timedelta
-import time
 import requests
 from starlette.middleware.cors import CORSMiddleware
 from prediction import total_key_word_extraction
+from validation import *
 app = FastAPI()
 origins = [
-    'http://localhost:54131',
+    'http://localhost:55170',
     "http://localhost:5500",
     "http://localhost:44242",
     "http://localhost:30001",
@@ -25,28 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-## Todo: Backend
-
-## Todo: FastAPI Server 띄우기
-
-# app = FastAPI()
-
-## Todo: /login
-    ## Todo: Frontend에서 login 정보가 넘어옴
-    ## Todo: login 정보대로 DB에 접근, 카톡방 목록 가져옴
-    ## Todo: 카톡방 목록을 frontend에 전달
-    
-class User(BaseModel):
-    user_id : Optional[str] = None
-    password : Optional[str] = None
-
-class Chatlist(BaseModel):
-    chat_room : str
-
-class Chat(BaseModel):
-    Date: str
-    User: str
-    Message: str
 
 @app.post('/login', description="user 정보를 가져옵니다.")
 def match_password(item : User):
@@ -85,11 +61,6 @@ def get_now(start_date, time_period, df):
     ## Todo: sample 만들어서 BentoML server와 통신하여 DTS output 받아오기
     ## Todo: DTS output을 Frontend로 전달
 
-class DtsInput(BaseModel):
-    chat_room : str
-    start_date : str ## or datetime, 아마 string일 듯
-    time_period : str
-    penalty : List[str]
 
 @app.post('/keywords')
 def make_keywords(item : DtsInput):
@@ -105,15 +76,7 @@ def make_keywords(item : DtsInput):
     result = total_key_word_extraction(chat_message, item.penalty)
 
     return {'result' : result}
-class ForTest(BaseModel):
-    data : str
-@app.post('/simple')
-def simple(item):
-    print('item, simple test is passed',item)
-    return {'hello' :'world'}
-@app.get('/test')
-def teste():
-    return json.dumps({'hello' :'world'},ensure_ascii = False)
+
 
 
 @app.post('/dts')
@@ -142,18 +105,21 @@ def make_dts(item : DtsInput):
     # print(sample_dict)
     sample_dict["penalty"] = item.penalty
     ## bentoml url for api dts
-    url = 'http://127.0.0.1:54131/dts'
+    url = 'http://127.0.0.1:55170/dts'
 
     
     ## 추후 penalty가 들어온다면 바뀌어야할 부분
     ## json 으로 item + penalty가 들어가야함. dict에 "penalty" : List[str] 추가하면 됨.
-    print('sample_dict', sample_dict)
+    # print('sample_dict', sample_dict)
     response = requests.post(url, json=sample_dict)
-    result = response.json()
-    print('result ' , result)
+    result = response.json() # response body가 나오는 것 -> 하지만 정확히 어떻게 변환 되는 지는 모름
+    # [[dict,dict,dict,...,dict],int]
+    output = {'timeline' : result[0], 'total_len' : result[1]}
+    print(output)
+    # print('result ' , result)
 
     ## Json 객체로 return을 해주는데 ensure_ascii = False를 해주어야 json.dumps를 할 때 한글이 깨지지 않음
-    return json.dumps(result, ensure_ascii = False)
+    return json.dumps(output, ensure_ascii = False)
 
 ## Todo: /summary
     ## Todo: 알맞는 timeline이 넘어옴
@@ -161,17 +127,13 @@ def make_dts(item : DtsInput):
     ## Todo: BentoML Server Summary 태우고 다시 Backend에 전달
     ## Todo: Summary output Frontend에 전달
 
-class SummaryInput(BaseModel):
-    start: str
-    due: str
-    content: str
-    dialogue: List[str]
+
 
 @app.post('/summary')
 def make_summary(item : SummaryInput):
 
     ## bentoml url for api summary
-    url = 'http://127.0.0.1:54131/summarization'
+    url = 'http://127.0.0.1:55170/summarization'
 
     ## requests 보내기 위해 dict 객체로 바꿔줌
     sample = dict(item)

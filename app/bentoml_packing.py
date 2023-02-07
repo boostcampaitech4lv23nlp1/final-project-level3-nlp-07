@@ -27,8 +27,8 @@ class SummaryService(bentoml.BentoService):
         # input이 위 형태로 들어오는데 get_DTS input으로 들어가기 위해 penalty를 따로 빼고 DataFrame으로 만들어서 get_DTS에 들어가게 된다.
         penalty = input.pop("penalty")
         input_df = pd.DataFrame.from_dict(input)
-        timeline = get_DTS(cs_model, dts_tokenizer, input_df,penalty)
-        return timeline
+        timeline, total_len = get_DTS(cs_model, dts_tokenizer, input_df,penalty)
+        return [timeline, total_len]
 
 
     @api(input=JsonInput(), batch=False)
