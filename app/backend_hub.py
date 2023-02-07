@@ -11,13 +11,15 @@ import requests
 from starlette.middleware.cors import CORSMiddleware
 from prediction import total_key_word_extraction
 app = FastAPI()
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-
-
+origins = [
+    'http://localhost:54131',
+    "http://localhost:5500",
+    "http://localhost:44242",
+    "http://localhost:30001",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=['*'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,11 +66,15 @@ def get_chatlist(item : User):
 # @app.post('/messages', description='채팅을 가져옵니다.')
 def get_chattings(item):
     chat = []
+    print('in_chat item',item)
+    print('db Key check',chat_db[item['chat_room']])
     for d in chat_db[item['chat_room']].find():
         chat.append({"Date":d['Date'],"User":d['User'],"Message":d['Message']})
+    print('끝난 chat', chat)
     return chat
 
-def get_now(start_date, time_period, df):    
+def get_now(start_date, time_period, df):
+    print(df) 
     df['Date'] = pd.to_datetime(df['Date'],infer_datetime_format=True)
     sample = df[df['Date'].isin(pd.date_range(str(start_date), str(start_date + timedelta(days=time_period)),freq = 's'))]
     return sample
@@ -98,14 +104,21 @@ def make_keywords(item : DtsInput):
 
     result = total_key_word_extraction(chat_message, item.penalty)
 
-    return result
+    return {'result' : result}
+class ForTest(BaseModel):
+    data : str
+@app.post('/simple')
+def simple(item):
+    print('item, simple test is passed',item)
+    return {'hello' :'world'}
+@app.get('/test')
+def teste():
+    return json.dumps({'hello' :'world'},ensure_ascii = False)
 
 
 @app.post('/dts')
-async def make_dts(item : DtsInput):
-
+def make_dts(item : DtsInput):
     print("item:",item)
-    # item = jsonable_encoder(item)
     chatroom = item.chat_room
     chat_dict = {"chat_room": chatroom}
     
@@ -121,6 +134,7 @@ async def make_dts(item : DtsInput):
 
     ## get_now를 통과하여 start_date ~ start_date + time_period 까지 sampling 진행
     sample = get_now(timestamp, int(item.time_period), chat_df)
+    print('sample', sample)
 
     ## JSON 형태로 넘기기 위해 datetime -> str으로 바꿔주고 / DataFrame을 dict로 변환
     sample['Date'] = sample['Date'].apply(str)
@@ -128,18 +142,18 @@ async def make_dts(item : DtsInput):
     # print(sample_dict)
     sample_dict["penalty"] = item.penalty
     ## bentoml url for api dts
-    url = 'http://0.0.0.0:44001/dts'
+    url = 'http://127.0.0.1:54131/dts'
 
     
     ## 추후 penalty가 들어온다면 바뀌어야할 부분
     ## json 으로 item + penalty가 들어가야함. dict에 "penalty" : List[str] 추가하면 됨.
+    print('sample_dict', sample_dict)
     response = requests.post(url, json=sample_dict)
-    result = jsonable_encoder(response.json())
+    result = response.json()
+    print('result ' , result)
 
     ## Json 객체로 return을 해주는데 ensure_ascii = False를 해주어야 json.dumps를 할 때 한글이 깨지지 않음
-    return JSONResponse(content =result, headers = {
-        "Access-Control-Allow-Origin": "http://127.0.0.1:5500"
-    })
+    return json.dumps(result, ensure_ascii = False)
 
 ## Todo: /summary
     ## Todo: 알맞는 timeline이 넘어옴
@@ -157,7 +171,7 @@ class SummaryInput(BaseModel):
 def make_summary(item : SummaryInput):
 
     ## bentoml url for api summary
-    url = 'http://0.0.0.0:44001/summarization'
+    url = 'http://127.0.0.1:54131/summarization'
 
     ## requests 보내기 위해 dict 객체로 바꿔줌
     sample = dict(item)
@@ -176,4 +190,4 @@ if __name__ == "__main__":
     user_db = client['User'] # Cluster0라는 이름의 데이터베이스에 접속
     chat_db = client["Chat"]
 
-    uvicorn.run(app, host="127.0.0.1", port=30001)
+    uvicorn.run(app, host="0.0.0.0",port=30001)

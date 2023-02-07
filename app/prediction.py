@@ -113,7 +113,7 @@ def predict_summary(inputs):
     return f'요약 결과 : {output}'
 
 def key_word_extraction(inputs,penalty):
-    PATH = '/opt/ml/input/frontend_Backend_test/final-project-level3-nlp-07/utils/stopword.txt'
+    PATH = '/opt/ml/input/final-project-level3-nlp-07/utils/stopword.txt'
     text = [re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]|[\n]|(@[A-Za-z0-9]+)|(\w+:\/\/\S+)", " ",sent) for sent in inputs]
     with open(PATH,'r') as f:
         words= f.read()
@@ -126,7 +126,7 @@ def key_word_extraction(inputs,penalty):
     return ' #' + ' #'.join(list(key_word.keys())[:3])
 
 def total_key_word_extraction(inputs,penalty):
-    PATH = '/opt/ml/input/frontend_Backend_test/final-project-level3-nlp-07/utils/stopword.txt'
+    PATH = '/opt/ml/input/final-project-level3-nlp-07/utils/stopword.txt'
     text = [re.sub(r"[^\uAC00-\uD7A30-9a-zA-Z\s]|[\n]|(@[A-Za-z0-9]+)|(\w+:\/\/\S+)", " ",sent) for sent in inputs]
     with open(PATH,'r') as f:
         words= f.read()

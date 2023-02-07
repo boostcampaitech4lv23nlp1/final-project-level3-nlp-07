@@ -190,6 +190,95 @@ Coded by www.creative-tim.com
                   <select class="form-select form-select-lg mb-3" name="selchat" id="selchat" style="width: 380px; height: 30px; font-size: larger;">  
                     <option>--선택--</option>
                   </select>
+                  <!-- <form action="http://101.101.218.23:30001/simple" method="post">
+                    이름 : <input type="text" name="data" placeholder="just for test"><br>
+                        <input type="submit">
+                  </form> -->
+                  <!-- <button id="gettest">결과보기</button> -->
+                  <script>
+                    // XML
+                    // document.getElementById('gettest').addEventListener('click', function(event){
+                    //   event.preventDefault();
+                    //   var xhr = XMLHttpRequest();
+                    //   xhr.open("POST", 'http://localhost:30001/simple', true);
+                    //   xhr.setRequestHeader()
+                    // });
+
+
+                    // form-way
+                    // function sendPost(url,data){
+                    //     var form = document.createElement('form');
+                    //     var hiddenField = document.createElement('input');
+                    //     form.setAttribute('method', 'post');
+                    //     form.setAttribute('action', url);
+                    //     document.charset = 'utf-8';
+                    //     for (var key in data){
+                    //       hiddenField.setAttribute('type', 'hidden');
+                    //       hiddenField.setAttribute('nane', key);
+                    //       hiddenField.setAttribute('value', data[key]);
+                    //       form.appendChild(hiddenField);
+                    //     }
+                    //     document.body.appendChild(form);
+                    //     form.submit();
+                    //   };
+                    // const gettest = document.getElementById('gettest')
+                    // var ddd = JSON.stringify({data : 'test'})
+                    // gettest.addEventListener('click', function(event){
+                    //   sendPost('http://localhost:30001/simple', ddd)
+                    // });
+
+
+                    // ajax way
+                    // const gettest = document.getElementById('gettest')
+                    // gettest.addEventListener('click', function(event){
+                    //   event.preventDefault();
+                    //   $.ajax({
+                    //     type : 'post',
+                    //     url : 'http://localhost:30001/simple/',
+                    //     async : true,
+                    //     headers : {
+                    //       'Content-Type' : 'application/json',
+                    //     },
+                    //     dataType : 'json',
+                    //     data : JSON.stringify({data : 'hello'}),
+                    //     success : function(result){
+                    //               console.log(result)
+                    //             },
+                    //     error : function(request, status, error){
+                    //       console.log(error)
+                    //     }
+                    //   });
+                    // });
+                    
+
+                    // fetch way
+                    // const gettest = document.getElementById('gettest')
+                    // gettest.addEventListener('click', function(event){
+                    //   const a= fetch('http://localhost:30001/simple' , {
+                    //             method: 'POST',
+                    //             mode: 'no-cors',
+                    //             headers: {
+                    //               'Content-Type': 'application/json', //; charset=UTF-8
+                    //               'Access-Control-Allow-Origin': ['*']},
+                    //             body: JSON.stringify({data : 'hello'}),
+                    //           }).then((data) =>{
+                    //             console.log(data)
+                    //               if (data.status >= 200 && data.status < 300){
+                    //                 console.log(data);
+                    //                 return data.json()
+                    //                 .then((json) => {
+                    //                   if (data.ok){
+                    //                     return Promise.resolve(json)
+                    //                   }
+                    //                   return Promise.reject(json)
+                    //                 })
+                    //               };
+                    //               console.log(data)
+                    //             })
+                    //     .catch((error) => console.log(error));
+                    //   });
+                  
+                  </script>
                   <!-- <ul class="dropdown-menu">
                     <li><button class="dropdown-item" type="button">Dropdown item1</button></li>
                     <li><button class="dropdown-item" type="button">Dropdown item2</button></li>

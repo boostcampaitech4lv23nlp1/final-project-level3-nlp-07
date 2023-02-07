@@ -55,12 +55,12 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    dts_tokenizer = AutoTokenizer.from_pretrained('klue/bert-base')
+    dts_tokenizer = AutoTokenizer.from_pretrained('klue/roberta-large')
     # dts_bert_model = BertModel.from_pretrained('/opt/ml/input/poc/BERT/bert_10').to(device)  
 
-    dts_cs_model = CSModel()  
+    dts_cs_model = CSModel()
 
-    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/dialouge_Topic_Segmentation/Domain_Topic_segmentor.pt'))
+    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/Dialog_Topic_segmentation/Topic_segmentation.pt'))
 
     dts_cs_model.to(device)  
 
