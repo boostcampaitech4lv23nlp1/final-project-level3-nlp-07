@@ -8,6 +8,7 @@ simcls_model/
 models/
 generate_data/
 kobart_r3f/
+r3f_model/
 
 # C extensions
 *.so
