@@ -105,7 +105,7 @@ function timeline(result){
 function postData(url = '', data = {}) {
     const response = fetch(url, {
       method: 'POST',
-      mode: 'no-cors',
+    //   mode: 'no-cors',
       credentials: 'include' ,
       cache : 'no-cache',
       headers: {
@@ -169,7 +169,7 @@ form.addEventListener("click", function(event){
     event.preventDefault();
     console.log('request true');
     console.log(request);
-    postData(url+'/simple' , request).then((data) => {
+    postData(url+'/dts' , request).then((data) => {
         console.log(data);
         timeline(data.json());
     })
