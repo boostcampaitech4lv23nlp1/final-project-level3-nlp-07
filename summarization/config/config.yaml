@@ -6,8 +6,8 @@ data:
     cache_dir: 
 
 model:
-    # model_name_or_path: gogamza/kobart-base-v2
-    model_name_or_path : yeombora/dialogue_summarization
+    model_name_or_path: gogamza/kobart-base-v2
+    # model_name_or_path : yeombora/dialogue_summarization
     roberta_path : klue/roberta-base
     use_fast: True
 
@@ -24,12 +24,12 @@ arg:
     num_beams: # None
     resize_position_embeddings: # None
     lr : 5e-5 
-    batch_size : 2
+    batch_size : 32
     num_epochs : 5 
-    save_dir : "/opt/ml/final-project-level3-nlp-07/summarization/simcls_model"
+    save_dir : "/opt/ml/final-project-level3-nlp-07/summarization/r3f_model"
     weight_decay : 0.1
     margin_lambda : 0.01
-    eval_steps : 1000
+    eval_steps : 1500
     early_stopping_patience : -1
     
 train:

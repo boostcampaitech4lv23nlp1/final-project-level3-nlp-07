@@ -6,8 +6,7 @@ from utils import detect_last_checkpoint, set_seed
 from arguments import cfg, args, train_args
 from model import load_model_tokenizer
 from logger import set_logging
-from simcls_model import CandidateScorer
-from simcls_trainer import Trainer, TrainConfig
+from r3f import Trainer, TrainConfig
 import argparse
 import torch
 
@@ -58,9 +57,7 @@ def train():
             eval_dataset = eval_dataset.select(range(args.max_eval_samples))
 
     trainer = Trainer(
-        model=model,
         generator_path = cfg.model.model_name_or_path,
-        roberta_path = cfg.model.roberta_path
     )
 
     # config = parse_args_to_config(cfg)
