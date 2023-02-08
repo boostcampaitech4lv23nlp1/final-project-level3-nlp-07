@@ -36,8 +36,6 @@ def train():
 
     # load model & tokenizer
 
-    model = CandidateScorer(cfg.model.roberta_path)
-
     if train_args.args.do_train:
         if "train" not in raw_datasets:
             raise ValueError("--do_train requires a train dataset")

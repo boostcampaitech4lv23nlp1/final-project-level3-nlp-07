@@ -18,7 +18,6 @@ def load_json(path: str) -> Dict[str, str]:
 
     return data
 
-
 # 대화ID, 대화, 요약 정보 추출
 def load_data(path: Dict) -> List[str]:
     eos = tokenizer.eos_token
@@ -26,6 +25,7 @@ def load_data(path: Dict) -> List[str]:
     dialogueID = []
     dialogue = []
     summary = []
+    cnt = 0
     for text in data['data']:
         dialogueID.append(text['header']['dialogueInfo']['dialogueID'])
         summary.append(text['body']['summary'])
@@ -44,6 +44,7 @@ def load_data(path: Dict) -> List[str]:
         if person_dialogue:
             utterances.append(person_dialogue)
         dialogue.append(eos.join(utterances))
+        cnt += 1
 
     data = {}
     data['ID'] = dialogueID
