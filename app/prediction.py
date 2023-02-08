@@ -86,7 +86,8 @@ def get_timeline(df,label,raw_df,penalty):
                 tmp['content'] = df.loc[seg_idx+1,'Message']
             # tmp['content'] = key_word_extraction(df.loc[seg_idx:idx,'Message'].tolist(),penalty)
             ## raw_df의 index가 string type이어서 str을 씌워주고 .loc을 해야함
-            tmp['dialogue'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'Message'].tolist()
+            tmp['dialogue'] =df.loc[seg_idx:idx,'Message'].tolist()
+            tmp['raw_dialogue'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'Message'].tolist()
             seg_idx = idx +1
             timeline.append(tmp)
     return timeline

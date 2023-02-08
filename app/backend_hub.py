@@ -132,6 +132,8 @@ def make_dts(item : DtsInput):
     ## json 으로 item + penalty가 들어가야함. dict에 "penalty" : List[str] 추가하면 됨.
     response = requests.post(url, json=sample_dict)
     result = response.json()
+    print(result)
+    # output = result[0]
 
     ## Json 객체로 return을 해주는데 ensure_ascii = False를 해주어야 json.dumps를 할 때 한글이 깨지지 않음
     return json.dumps(result, ensure_ascii = False)
@@ -147,6 +149,7 @@ class SummaryInput(BaseModel):
     due: str
     content: str
     dialogue: List[str]
+    raw_dialogue: List[str]
 
 @app.post('/summary')
 def make_summary(item : SummaryInput):
@@ -156,6 +159,7 @@ def make_summary(item : SummaryInput):
 
     ## requests 보내기 위해 dict 객체로 바꿔줌
     sample = dict(item)
+    new_sample = sample.pop("raw_dialogue")
 
     ## bentoml/summarization에 summary output을 요청함
     response = requests.post(url, json=sample)

@@ -89,10 +89,10 @@ def main(chat):
             with st.spinner('선택하신 기간으로 적절한 주제를 찾고 있습니다...'): # with 아래 까지 실행되는 동안 동그라미를 띄운다.
                 # api로 날릴수 있는 부분 -> backend에 요청할 부분!
                 DTS_input = {
-                    "chat_room": "KakaoTalk_Chat_IT개발자 구직_채용 정보교류방",
-                    "start_date": "2023-01-11",
-                    "time_period": "1",
-                    "penalty": ["채용","취업"]
+                    "chat_room": "인공지능 정보공유방",
+                    "start_date": "2023-02-01",
+                    "time_period": "9",
+                    "penalty": ["AI","Recsys"]
                     }
                 #st.write(DTS_input)
                 response = requests.post("http://localhost:30001/dts", json = DTS_input)
@@ -108,7 +108,7 @@ def main(chat):
         # timeline의 형태 {"start": "2023-01-11 01:42:22", "due": "2023-01-11 08:17:14", "content": "여기", "dialogue": ""}
         timeline = st.session_state['timeline']
         cls = st.columns([0.3,0.7],gap ='small') # 화면 분할 레이어 3개로
-        # st.write(timeline)
+        st.write(timeline)
         # st.write(type(timeline)) 
         with cls[1]:
             # else:
@@ -128,7 +128,7 @@ def main(chat):
                 ,height = 300)
                     tab1.download_button('요약문 다운로드', summary)
                     with tab2:
-                        for idx, item in enumerate(timeline['dialogue']):
+                        for idx, item in enumerate(timeline['raw_dialogue']):
                             message(item, key = f"<uniquevalueofsomesort{idx}>")
                     # tab2.download_button('Dows', summary)
                     with tab3:
