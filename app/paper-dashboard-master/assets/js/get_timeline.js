@@ -101,7 +101,7 @@ function timeline(result){
         if (params.componentType === 'markPoint'){
             var reques = { dialogue : params.dialogue};
             postData(url+'/summary', reques).then(data => {
-            let ele = document.createElement('h2')
+            let ele = document.createElement('textarea')
             // ele.style.weight = 700;
             // ele.style.height = 200;
             ele.innerText(data);
@@ -112,12 +112,34 @@ function timeline(result){
         }
         })
     };
-
 function highlightchart(data){
     console.log('response data')
     console.log(data)
     console.log(typeof data)
-    var for_data = JSON.parse(data)['timeline']
+    // 카드 옵션 입력하기
+    // 전체 대화수 녹이기
+    var Response = JSON.parse(data)
+    var for_data = Response['timeline']
+    var total_len = Response['total_len'];
+    // 요약 발화수 녹이기
+    var dts_len = for_data.length;
+    // 요약 발화수 녹이기
+    var seg_per = Math.floor(((total_len - dts_len)/total_len)*100);
+    // 현재 내용 지우기
+    $('#chat_ratio').empty();
+    $('#seg_len').empty();
+    $('#chat_t_len').empty();
+
+    // 변경된 입력 값 넣기
+    $('#chat_ratio').text(seg_per + '%');
+    $('#seg_len').text(dts_len);
+    $('#chat_t_len').text(total_len);
+
+
+
+    // to submit
+    // 각각 변수명 잡고 
+    
     console.log(for_data);
     var input_data = []
     for (let i = 0;i<20;i++){
@@ -125,7 +147,8 @@ function highlightchart(data){
         name : for_data[i]['content'],
         label : for_data[i]['content'],
         description : for_data[i]['dialogue'][0] + '...' + '요약 결과 보기',
-        dialogue : for_data[i]['dialogue']
+        dialogue : for_data[i]['dialogue'],
+        user : for_data[i]['user']
     })
     };
     console.log('input_data');
@@ -133,19 +156,30 @@ function highlightchart(data){
     // console.log(data[0]['start']);
     // console.log(data[0]['content']);
     console.log(input_data);
-    Highcharts.chart('charts', {
+    var charts = Highcharts.chart('charts', {
         chart: {
             zoomType: 'x',
-            type: 'timeline'
+            type: 'timeline',
+            events:{
+                load: function(event){
+                    event.target.reflow()
+                //     const parentDiv = document.getElementById("parentDiv");
+                //     const childDiv = document.getElementById("childDiv");
+                //     parentDiv.style.height = `${childDiv.offsetHeight}px`;
+                // }
+            }
+        }
+
         },
+        reflow : true,
         zooming :{
             type : "x"
         },
         xAxis: {
             type: 'datetime',
-            visible: false,
+            visible: true,
             // minRange: 10 * 365 * 24 * 3600 * 1000
-            minRange: 600 * 100
+            minRange: 24 * 3600 * 100
         },
     
         yAxis: {
@@ -167,7 +201,7 @@ function highlightchart(data){
         },
         tooltip: {
           style: {
-                width: 300
+                width: '80%'
             }
         //   xDateFormat: '%A, %b %e, %H:%M:%S',
         //   dateTimeLabelFormats: {
@@ -182,28 +216,50 @@ function highlightchart(data){
                 },
             events:{  // 이벤트
                 click: function (event){ // 클릭이벤트 
-                    console.log(event.point.dialogue);
+                    while (summary.firstChild) {
+                        summary.removeChild(summary.firstChild);
+                      }
+                    while (commentsContainer.firstChild) {
+                        commentsContainer.removeChild(commentsContainer.firstChild);
+                    }
+                    console.log(event.point);
+                    for (let i=0; i<event.point.dialogue.length;i++){
+                        var tmp = i%10;
+                        addComment(event.point.user[i], event.point.dialogue[i], "../assets/img/faces/Charactor-"+tmp.toString()+".jpg");
+                    };
                     var reques = { dialogue : event.point.dialogue};
+                    console.log(reques)
                     alert('요약을 실행합니다....')
-                    var rawdata =$('rawdata');
                     
-                    postData(url+'/summary', reques).then(data => {
-                    let ele = document.createElement('h4')
-                    let text = document.createTextNode(data);
-                    ele.appendChild(text);
-                    summary.appendChild(ele)})
-                    .catch((e) =>{
-                        console.log(e)
+                    postData(url+'/summary', reques).then((data) => {
+                        let ele = document.createElement('h5');
+                        // ele.style.weight = "100%";
+                        // ele.style.height = "100%";
+                        // ele.style.margin = "0 auto";
+                        let dd = Date(event.point.x)
+                        let text = document.createTextNode(`${dd.toString().split(' ').slice(0,5)}에서 총 ${event.point.dialogue.length}건의 대화가 발생했습니다. \n
+                        요약된 내용은 아래와 같습니다. \n
+    
+                        ${data} \n
+                        YOUMBora는 더 낳은 오픈 톡방 서비스를 위해 최선을 다하고 있습니다.
+                        `);
+                        ele.appendChild(text);
+                        summary.appendChild(ele)
                     })
+
                 }
                 },
             marker: {
                 symbol: 'circle'
             },
-            data: input_data
+            data: input_data,
             }]
     });
-    // 전체 대화수 녹이기
+    charts.reflow()
+    return charts;
+    // $('total_len').text
+    // 거기에 inner text넣어주기
+    // 타임라인 크기 맞추기 
 };
 
 // console.log(data)
@@ -274,7 +330,7 @@ form.addEventListener("click", function(event){
         alert('키워드 추출이 완료되었습니다. 대화 내 걸맞는 주제를 찾고 있습니다...')
     }
     );
-    postData(url+'/dts' , request).then(highlightchart)
+    postData(url+'/dts' , request).then((data)=>{highlightchart(data)})
     .catch((error) =>{
         console.log(error)
         alert('입력이 거부되었습니다. DTSx')

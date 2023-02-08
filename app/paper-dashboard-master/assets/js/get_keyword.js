@@ -16,8 +16,8 @@ function get_Keyword(data){
     console.log('data_for_series',data_for_series)
     var myChart = echarts.init(document.getElementById('keywords'),null);
     myChart.resize({
-        width : "400%",
-        height : "305%"
+        width : "350%",
+        height : "300px"
     });    
     var option = {
         tooltip: {

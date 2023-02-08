@@ -14,6 +14,46 @@ $(document).ready(function(){
       $("#"+tab_id).addClass('current');
   });
 });
+const commentsContainer = document.getElementById("commentsContainer");
+console.log('commentsContainer')
+console.log(commentsContainer)
+function addComment(u_name, msg, imageUrl) {
+  var commentDiv = document.createElement("div");
+  var image = document.createElement("img");
+  var usernameSpan = document.createElement("span");
+  var messageP = document.createElement("p");
+
+  commentDiv.style.display = 'flex';
+  commentDiv.style.margin = '10px';
+  commentDiv.style.padding = '5px';
+  commentDiv.style.background = '#ededed';
+  // commentDiv.style.justifyContent = 'center';
+  image.src = imageUrl;
+  image.style.display = 'inline';
+  image.style.width = "50px";
+  image.style.height = "50px";
+  image.style.borderRadius = "25px";
+  image.style.float = "left";
+  image.style.marginRight = "10px";
+
+  messageP.style.display = 'inline';
+  messageP.style.textAlign = "right";
+  messageP.style.margin = "10px";
+
+  let username = document.createTextNode(u_name);
+  let message = document.createTextNode(msg);
+  usernameSpan.appendChild(username)
+  messageP.appendChild(message)
+
+  
+  commentDiv.appendChild(image);
+  commentDiv.appendChild(usernameSpan);
+  commentDiv.appendChild(messageP);
+  
+  
+  commentsContainer.appendChild(commentDiv);
+
+  };
 
 
 function postData(url = '', data = {}) {

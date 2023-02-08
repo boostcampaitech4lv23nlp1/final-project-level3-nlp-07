@@ -72,15 +72,17 @@ def get_timeline(df,label,raw_df,penalty):
             tmp['start'] = str(df.loc[seg_idx,'Date'])   # 시작 시점 표시
             tmp['due'] = str(df.loc[idx,'Date'])
             # 전처리 이전 데이터로 메세지를 모아서 보기 위함
+            tmp['dialogue'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'Message'].tolist()
+            tmp['user'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'User'].tolist()
             try:
                 tmp['content'] = key_word_extraction(df.loc[seg_idx:idx,'Message'].tolist(),penalty)
+                seg_idx = idx +1
+                timeline.append(tmp)
             except:
-                tmp['content'] = df.loc[seg_idx+1,'Message']
+                # tmp['content'] = df.loc[seg_idx+1,'Message'] 그냥 안넣겠단 마인드 이런 느낌.
+                seg_idx = idx +1
             # tmp['content'] = key_word_extraction(df.loc[seg_idx:idx,'Message'].tolist(),penalty)
             ## raw_df의 index가 string type이어서 str을 씌워주고 .loc을 해야함
-            tmp['dialogue'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'Message'].tolist()
-            seg_idx = idx +1
-            timeline.append(tmp)
     return timeline
 
 def get_DTS(cs_model,tokenizer,inputs,penalty):
