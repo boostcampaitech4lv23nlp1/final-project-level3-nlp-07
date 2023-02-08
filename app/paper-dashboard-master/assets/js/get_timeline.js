@@ -241,7 +241,7 @@ function highlightchart(data){
                         요약된 내용은 아래와 같습니다. \n
     
                         ${data} \n
-                        YOUMBora는 더 낳은 오픈 톡방 서비스를 위해 최선을 다하고 있습니다.
+                        YOUMBora는 더 나은 오픈 톡방 서비스를 위해 최선을 다하고 있습니다.
                         `);
                         ele.appendChild(text);
                         summary.appendChild(ele)

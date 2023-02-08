@@ -72,8 +72,10 @@ def get_timeline(df,label,raw_df,penalty):
             tmp['start'] = str(df.loc[seg_idx,'Date'])   # 시작 시점 표시
             tmp['due'] = str(df.loc[idx,'Date'])
             # 전처리 이전 데이터로 메세지를 모아서 보기 위함
-            tmp['dialogue'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'Message'].tolist()
-            tmp['user'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'User'].tolist()
+            # tmp['dialogue'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'Message'].tolist()
+            # tmp['user'] =raw_df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'User'].tolist()
+            tmp['dialogue'] = df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'Message'].tolist()
+            tmp['user']     = df.loc[str(df.loc[seg_idx,'index']):str(df.loc[idx,'index']), 'User'].tolist()
             try:
                 tmp['content'] = key_word_extraction(df.loc[seg_idx:idx,'Message'].tolist(),penalty)
                 seg_idx = idx +1
