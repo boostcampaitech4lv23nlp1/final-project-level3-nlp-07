@@ -20,10 +20,11 @@
 <img src='https://user-images.githubusercontent.com/44632158/208237676-ae158236-16a5-4436-9a81-8e0727fe6412.jpeg' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/44632158/208237686-c66a4f96-1be0-41e2-9fbf-3bf738796c1b.jpeg' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/108864803/208801820-5b050001-77ed-4714-acd2-3ad42c889ff2.png' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/108864803/208802208-0e227130-6fe5-4ca0-9226-46d2b07df9bf.png' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/97818356/217166687-a8ab141e-94e8-4a44-b976-ac801ff246ea.jpg' height=80 width=80px></img>|
 [Github](https://github.com/datakim1201)|[Github](https://github.com/neulvo)|[Github](https://github.com/JaeUk2)|[Github](https://github.com/unknownburphy)|[Github](https://github.com/inni-iii)|
 Project Design<br>DTS modeling<br>FrontEnd<br>Deployment|Dataset Search<br>FrontEnd<br>BackEnd<br>TroubleShooting|Data post-processing<br>Data Guideline<br>Summarization<br>DB build|Dataset Search<br>Data pre-processing<br>DTS<br>BackEnd|Project Manager<br>Data Guideline<br>Summarization<br>FrontEnd
-&nbsp;
 
 ## Demo
-데모 영상 삽입
+<p align="center">
+<img src="https://user-images.githubusercontent.com/97818356/217692841-7f10b9d8-73c1-46b9-99a5-d63a788b7904.gif">
+</p>
 
 &nbsp;  
 
