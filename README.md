@@ -2,7 +2,7 @@
 > 카카오톡 오픈 채팅방의 대화 내용을 요약해주는 서비스
 &nbsp;
 
-> 최종 발표 PDF & YOUTUBE
+> 최종 발표 [PDF](https://github.com/boostcampaitech4lv23nlp1/final-project-level3-nlp-07/blob/master/assets/%5B%EC%B5%9C%EC%A2%85%5DNLP_07_%EC%98%A4%ED%94%88%EC%B1%84%ED%8C%85%EB%B0%A9%EC%9A%94%EC%95%BD.pdf) & [YOUTUBE](https://www.youtube.com/watch?v=VgHl_u3EKKQ)
 
 ## 개요
 **YOUM**은 카카오톡 오픈 채팅방의 대화 내용을 요약해주는 서비스입니다. 현재 카카오톡 오픈 채팅방은 월간 900만 ~ 1000만 명이 사용할 정도로 수요가 많은 서비스이며 그 수요는 꾸준히 증가하고 있습니다. 하지만 대화 참여자가 많아짐에 따라 대화의 흐름을 파악하기 어렵게 되고 원하는 주제가 아닌 대화가 오고 가게 되어 그에 대한 관심과 참여가 떨어지는 문제가 발생하고 있습니다.
@@ -15,8 +15,6 @@
 &nbsp;
 
 ## Members
----
-
 김한성|염성현|이재욱|최동민|홍인희|
 :-:|:-:|:-:|:-:|:-:
 <img src='https://user-images.githubusercontent.com/44632158/208237676-ae158236-16a5-4436-9a81-8e0727fe6412.jpeg' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/44632158/208237686-c66a4f96-1be0-41e2-9fbf-3bf738796c1b.jpeg' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/108864803/208801820-5b050001-77ed-4714-acd2-3ad42c889ff2.png' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/108864803/208802208-0e227130-6fe5-4ca0-9226-46d2b07df9bf.png' height=80 width=80px></img>|<img src='https://user-images.githubusercontent.com/97818356/217166687-a8ab141e-94e8-4a44-b976-ac801ff246ea.jpg' height=80 width=80px></img>|
@@ -102,11 +100,8 @@ $ streamlit run app.py --server.port 30002
 │  ├─ __init__.py
 │  ├─ config
 │  │  └─ config.yaml
-│  ├─ data_process.py
-│  ├─ load_dataset.py
-│  ├─ main.py
-│  ├─ model.py
-│  └─ utils.py
+│  ├─ ...
+│  └─ main.py
 │
 ├─ app
 │  ├─ app.py
@@ -116,63 +111,32 @@ $ streamlit run app.py --server.port 30002
 │  ├─ model.py
 │  ├─ paper-dashboard-master
 │  │  ├─ assets
-│  │  │  ├─ css
-│  │  │  ├─ demo
-│  │  │  ├─ fonts
 │  │  │  ├─ js
 │  │  │  │  ├─ core
 │  │  │  │  │  ├─ bootstrap.min.js
 │  │  │  │  │  ├─ jquery.min.js
 │  │  │  │  │  └─ popper.min.js
-│  │  │  │  ├─ dashboard_input.js
+│  │  │  │  ├─ ...
 │  │  │  │  ├─ get_keyword.js
 │  │  │  │  ├─ get_timeline.js
-│  │  │  │  ├─ paper-dashboard.js
-│  │  │  │  ├─ paper-dashboard.js.map
-│  │  │  │  ├─ paper-dashboard.min.js
-│  │  │  │  ├─ plugins
-│  │  │  │  │  ├─ bootstrap-notify.js
-│  │  │  │  │  ├─ chartjs.min.js
-│  │  │  │  │  └─ perfect-scrollbar.jquery.min.js
-│  │  │  │  └─ request.js
+│  │  │  │  ├─ dashboard_input.js
+│  │  │  │  └─ paper-dashboard.js
 │  │  │  └─ scss
 │  │  ├─ examples
-│  │  ├─ gulpfile.js
-│  │  ├─ nucleo-icons.html
-│  │  ├─ package.json
-│  │  └─ template.html
 │  ├─ prediction.py
 │  ├─ requirements.txt
 │  └─ validation.py
 ├─ deploy_ssh.sh
-├─ nltk.txt
 ├─ notebooks
-│  ├─ TextTiling.ipynb
-│  ├─ dialogue_eda.ipynb
+│  ├─ ...
 │  ├─ extract_dialogue.ipynb
-│  ├─ predict_test_DTS.ipynb
-│  └─ unsupervised.ipynb
-
+│  └─ predict_test_DTS.ipynb
 ├─ summarization
-│  ├─ arguments.py
-│  ├─ check.py
-│  ├─ config
-│  │  ├─ config.yaml
-│  │  └─ sweep_config.yaml
-│  ├─ data_loader.py
-│  ├─ logger.py
-│  ├─ metrics.py
-│  ├─ model.py
-│  ├─ process_text.py
-│  ├─ train.py
-│  ├─ train_sweep.py
-│  └─ utils.py
+│  ├─ ...
+│  └─ train.py
 └─ utils
 │   ├─ __init__.py
-│   ├─ nltk.txt
-│   ├─ open.py
-│   ├─ postprocessing.py
-│   ├─ preprocessing.py
+│   ├─ ...
 │   └─ stopword.txt
 ├─ README.md
 ├─ poetry.lock
@@ -182,5 +146,9 @@ $ streamlit run app.py --server.port 30002
 └── thanks for comming I'm Yeombora
 ```
 ## reference
+* TextTiling: segmenting text into multi-paragraph subtopic passages
+* Unsupervised Topic Segmentation of Meetings with BERT Embeddings
 * Improving Unsupervised Dialogue Topic Segmentation with Utterance-Pair Coherence Scoring (Xing et al, 2021)
+* BART: Denoising Sequence-to-Sequence Pre-training for Natural Language Generation, Translation, and Comprehension
+* SimCLS: A Simple Framework for Contrastive Learning of Abstractive Summarization
 * https://github.com/Hanul/BadWordFilter
