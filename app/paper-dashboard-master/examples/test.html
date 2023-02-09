@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.1/dist/echarts.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div id="main" style="width: 200px;height:400px;"></div>
+    <div id="main2" style="width: 200px;height:400px;"></div>
+</body>
+    <script type="text/javascript">
+        // Initialize the echarts instance based on the prepared dom
+        var myChart = echarts.init(document.getElementById('main'),null);
+        const labelOption = {
+            show: true,
+            rotate: 90,
+            formatter: '{c}',
+            fontSize: 16,
+            rich: {
+                name: {}
+            }
+        };
+        var option = {
+        title: {
+            text: 'Rainfall vs Evaporation',
+            subtext: 'Fake Data'
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            data: ['Rainfall', 'Evaporation']
+        },
+        toolbox: {
+            show: true,
+            feature: {
+            dataView: { show: true, readOnly: false },
+            magicType: { show: true, type: ['line', 'bar'] },
+            restore: { show: true },
+            saveAsImage: { show: true }
+            }
+        },
+        calculable: true,
+        xAxis: [
+            {
+            // type: 'time',
+            type: 'category',
+            // prettier-ignore
+            data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            }
+        ],
+        yAxis: [
+            {
+            type: 'value'
+            }
+        ],
+        series: [
+            {
+            label: labelOption,
+            name: 'Rainfall',
+            type: 'bar',
+            data: [
+                2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3
+            ],
+            markPoint: {
+                data: [
+                // 데이터의 개수만큼
+                // 포문 짜면되지않을까? -> 리스트 컴프리핸션 몰라 ㅋ
+                { name: '7', value: '하윙', xAxis: 7, yAxis: 179 },
+                { name: '0', value: '하윙', xAxis: 0, yAxis: 179 },
+                { name: '1', value: '하윙', xAxis: 1, yAxis: 179 },
+                { name: '2', value: '하윙', xAxis: 2, yAxis: 179 },
+                { name: '3', value: '하윙', xAxis: 3, yAxis: 179 },
+                { name: '4', value: '하윙', xAxis: 4, yAxis: 179 },
+                { name: '5', value: '하윙', xAxis: 5, yAxis: 179 },
+                { name: '6', value: '하윙', xAxis: 6, yAxis: 179 },
+                { name: '8', value: '하윙', xAxis: 8, yAxis: 179 },
+                { name: '9', value: '하윙', xAxis: 9, yAxis: 179 },
+                { name: '10', value: '하윙', xAxis: 10, yAxis: 179 },
+                { name: '11', value: '하윙', xAxis: 11, yAxis: 179 }
+                ]
+            },
+            markLine: {
+                data: [{ yAxis: 70, name: 'Avg' }]
+            }
+            }
+        ]
+        };
+  
+        // Display the chart using the configuration items and data just specified.
+        myChart.setOption(option);
+        myChart.on('click', function (params){
+            if (params.componentType === 'markPoint'){
+            window.open('https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' +  encodeURIComponent(params.name))}
+            else if (params.componentType === 'series'){
+
+            }
+        })
+      </script>
+    <script type="text/javascript">
+        // Initialize the echarts instance based on the prepared dom
+        var myChart = echarts.init(document.getElementById('main2'),null);
+        // myChart.resize({
+        // width: 800,
+        // height: 400
+        // });
+            
+        // Specify the configuration items and data for the chart
+        var option = {
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b} : {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                data: [
+                'Direct Access',
+                'Email Marketing',
+                'Affiliate Ads',
+                'Video Ads',
+                'Search Engines'
+                ]
+            },
+            series: [
+                {
+                name: 'Access Source',
+                type: 'pie',
+                radius: '55%',
+                center: ['50%', '60%'],
+                data: [
+                    { value: 335, name: 'Direct Access' },
+                    { value: 310, name: 'Email Marketing' },
+                    { value: 234, name: 'Affiliate Ads' },
+                    { value: 135, name: 'Video Ads' },
+                    { value: 1548, name: 'Search Engines' }
+                ],
+                emphasis: {
+                    itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+                }
+            ]
+            };
+
+            let currentIndex = -1;
+
+            setInterval(function() {
+            var dataLen = option.series[0].data.length;
+            myChart.dispatchAction({
+                type: 'downplay',
+                seriesIndex: 0,
+                dataIndex: currentIndex
+            });
+            currentIndex = (currentIndex + 1) % dataLen;
+            myChart.dispatchAction({
+                type: 'highlight',
+                seriesIndex: 0,
+                dataIndex: currentIndex
+            });
+            myChart.dispatchAction({
+                type: 'showTip',
+                seriesIndex: 0,
+                dataIndex: currentIndex
+            });
+            }, 1000);
+  
+        // Display the chart using the configuration items and data just specified.
+        myChart.setOption(option);
+        myChart.on('click', function (params){
+            if (params.componentType === 'markPoint'){
+            window.open('https://search.naver.com/search.naver?sm=top_hty&fbm=1&ie=utf8&query=' +  encodeURIComponent(params.name))}
+            else if (params.componentType === 'series'){
+
+            }
+        })
+      </script>
+</html>
+
