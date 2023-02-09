@@ -64,11 +64,11 @@ if __name__ == "__main__":
 
     dts_cs_model.to(device)  
 
-    summary_tokenizer = PreTrainedTokenizerFast.from_pretrained("yeombora/dialogue_summarization", use_fast=True)
-    summary_model = BartForConditionalGeneration.from_pretrained("yeombora/dialogue_summarization").to(device)  
+    summary_tokenizer = PreTrainedTokenizerFast.from_pretrained("yeombora/kobart_r3f", use_fast=True)
+    summary_model = BartForConditionalGeneration.from_pretrained("yeombora/kobart_r3f").to(device)  
 
-    roberta_tokenizer = AutoTokenizer.from_pretrained("yeombora/SimCLS_Test")  
-    roberta_model = AutoModel.from_pretrained("yeombora/SimCLS_Test").to(device)  
+    roberta_tokenizer = AutoTokenizer.from_pretrained("yeombora/Kobart_SimCLS")  
+    roberta_model = AutoModel.from_pretrained("yeombora/Kobart_SimCLS").to(device)  
 
     bento_svc = SummaryService()
 

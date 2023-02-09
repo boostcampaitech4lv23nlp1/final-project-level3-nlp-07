@@ -148,6 +148,7 @@ function highlightchart(data){
         label : for_data[i]['content'],
         description : for_data[i]['dialogue'][0] + '...' + '요약 결과 보기',
         dialogue : for_data[i]['dialogue'],
+        r_dialogue : for_data[i]['raw_dialogue'],
         user : for_data[i]['user']
     })
     };
@@ -175,11 +176,12 @@ function highlightchart(data){
         zooming :{
             type : "x"
         },
+        
         xAxis: {
             type: 'datetime',
             visible: true,
             // minRange: 10 * 365 * 24 * 3600 * 1000
-            minRange: 24 * 3600 * 100
+            minRange: 3600 * 100
         },
     
         yAxis: {
@@ -201,7 +203,7 @@ function highlightchart(data){
         },
         tooltip: {
           style: {
-                width: '80%'
+                width: '100%'
             }
         //   xDateFormat: '%A, %b %e, %H:%M:%S',
         //   dateTimeLabelFormats: {
@@ -214,6 +216,7 @@ function highlightchart(data){
                 format: '<span style="color:{point.color}">● </span><span style="font-weight: bold;" > ' +
                     '{point.name}</span><br/>{point.x:%d %b %Y}'
                 },
+            zIndex : -1,
             events:{  // 이벤트
                 click: function (event){ // 클릭이벤트 
                     while (summary.firstChild) {
@@ -232,19 +235,20 @@ function highlightchart(data){
                     alert('요약을 실행합니다....')
                     
                     postData(url+'/summary', reques).then((data) => {
-                        let ele = document.createElement('h5');
-                        // ele.style.weight = "100%";
-                        // ele.style.height = "100%";
-                        // ele.style.margin = "0 auto";
+                        let head = document.createElement('p');
+                        let body = document.createElement('h3');
+                        let foot = document.createElement('p');
                         let dd = Date(event.point.x)
-                        let text = document.createTextNode(`${dd.toString().split(' ').slice(0,5)}에서 총 ${event.point.dialogue.length}건의 대화가 발생했습니다. \n
-                        요약된 내용은 아래와 같습니다. \n
-    
-                        ${data} \n
-                        YOUMBora는 더 나은 오픈 톡방 서비스를 위해 최선을 다하고 있습니다.
-                        `);
-                        ele.appendChild(text);
-                        summary.appendChild(ele)
+                        let t1 = document.createTextNode('YOUMBora는 더 나은 오픈 톡방 서비스를 위해 최선을 다하고 있습니다.')
+                        let t2 = document.createTextNode(`${data}`)
+                        let t3 = document.createTextNode(`${dd.toString().split(' ').slice(2,5)}에서 총 ${event.point.dialogue.length}건의 대화가 발생했습니다. 요약된 내용압나다.`)
+                        // let text = document.createTextNode(`${dd.toString().split(' ').slice(2,5)}에서 총 ${event.point.dialogue.length}건의 대화가 발생했습니다. \n요약된 내용은 아래와 같습니다. \n  \n  YOUMBora는 더 나은 오픈 톡방 서비스를 위해 최선을 다하고 있습니다.`);
+                        head.appendChild(t1);
+                        body.appendChild(t2);
+                        foot.appendChild(t3);
+                        summary.appendChild(head)
+                        summary.appendChild(body)
+                        summary.appendChild(foot)
                     })
 
                 }
@@ -316,20 +320,21 @@ form.addEventListener("click", function(event){
     };
     console.log('test2')
     var request ={
-        // "chat_room" : chat_rooms2,
-        "chat_room" : "IT 개발자 구직 채용 정보교류방",
-        // "start_date" : start_dates2,
-        "start_date" : "2022-12-16",
-        // "time_period" : time_periods2,
-        "time_period" : "10",
-        // "penalty" : penalty_ls2
-        "penalty" :["AI","ML"]
+        "chat_room" : chat_rooms2,
+        // "chat_room" : "IT 개발자 구직 채용 정보교류방",
+        "start_date" : start_dates2,
+        // "start_date" : "2022-12-16",
+        "time_period" : time_periods2,
+        // "time_period" : "10",
+        "penalty" : penalty_ls2
+        // "penalty" :["AI","ML"]
     };
     console.log(request)
-    postData(url+'/keywords' , request).then(get_Keyword).then((data) =>{
-        alert('키워드 추출이 완료되었습니다. 대화 내 걸맞는 주제를 찾고 있습니다...')
-    }
-    );
+    postData(url+'/keywords' , request).then(get_Keyword)
+    // .then((data) =>{
+    //     alert('키워드 추출이 완료되었습니다. 대화 내 걸맞는 주제를 찾고 있습니다...')
+    // }
+    // );
     postData(url+'/dts' , request).then((data)=>{highlightchart(data)})
     .catch((error) =>{
         console.log(error)

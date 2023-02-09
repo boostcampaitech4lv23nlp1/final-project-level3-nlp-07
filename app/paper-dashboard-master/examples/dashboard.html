@@ -71,15 +71,13 @@ Coded by www.creative-tim.com
     @import url("../assets/css/ckbox.css");
     #charts {
         min-width: 400px;
-        max-width: 1000px;
+        /* max-width: 910px;  -> safari 용 최적값*/
+        max-width: 1100px;
         /* overflow-x:scroll; */
         margin: 0 auto;
-        /* position: absolute; */
-        /* position: inherit; */
-        /* top: 10;
-        left: 10; */
-        width: 100%;
-        height: 145%;
+        position: absolute;
+        top: 0;
+        left: 0;
     }
     ul.tabs{
       margin : 0px;
@@ -217,7 +215,7 @@ Coded by www.creative-tim.com
                   </p>
                 </a>
               </li> -->
-            </ul>
+            <!-- </ul> -->
           </div>
         </div>
       </nav>
@@ -434,7 +432,7 @@ Coded by www.creative-tim.com
                 </div>
                 <div class="col-7 col-md-8">
                   <div class="numbers">
-                    <p class="card-category">요약 대화 수</p>
+                    <p class="card-category">주제 수</p>
                     <p class="card-title" id="seg_len">_<p>
                   </div>
                 </div>
@@ -509,10 +507,10 @@ Coded by www.creative-tim.com
               <div class="card-header ">
                 <h5 class="card-title">타임라인 키워드</h5>
               </div>
-              <div class="card-body" style="height:245px; width: 1000px; display: table;">
+              <div class="card-body" style="height:250px; width: 1100px; display: table; z-index: 998;">
               <!-- <div class="card-body"> -->
                 <!-- <div id="charts" style="height:145%; width: 1000px;"></div> -->
-                <div id="charts" style="display: table-row;"></div>
+                <div id="charts" style="display: table-row; height:380px; width: 1000px; z-index :999;"></div>
                 <!-- <canvas id=chartHours></canvas> -->
               </div>
               <div class="card-footer ">
@@ -531,12 +529,12 @@ Coded by www.creative-tim.com
               <!-- <div class="card-body "height:245px; width: 1000px; display: table;"> -->
                 <canvas id="keywords"></canvas>
               </div>
-              <!-- <div class="card-footer ">
-                <hr>
+              <!-- <div class="card-footer "> -->
+                <!-- <hr>
                 <div class="stats">
                   <i class="fa fa-calendar"></i> Ratio of chat room's Keyword
-                </div>
-              </div> -->
+                </div> -->
+              <!-- </div> -->
             </div>
           </div>
         </div>
