@@ -8,8 +8,6 @@ from model import load_model_tokenizer
 from logger import set_logging
 from process_text import preprocess_function
 from metrics import compute_metrics
-
-import torch
 import wandb
 
 
@@ -17,10 +15,6 @@ def train():
 
     # check
     check()
-
-    # Device
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    print(device)
 
     # logger
     logger = set_logging('train')
@@ -36,41 +30,39 @@ def train():
     print(raw_datasets)
 
     # load model & tokenizer
-    model, tokenizer = load_model_tokenizer(logger)
-    model.to(device)
+    model, tokenizer = load_model_tokenizer()
 
     if train_args.args.do_train:
-        if "train" not in raw_datasets:
-            raise ValueError("--do_train requires a train dataset")
         train_dataset = raw_datasets["train"]
+
+        # 몇 개의 sample만 볼 때 사용하기
         if args.max_train_samples is not None:
             max_train_samples = min(len(train_dataset), args.max_train_samples)
             train_dataset = train_dataset.select(range(max_train_samples))
-        with train_args.args.main_process_first(desc="train dataset map pre-processing"):
-            train_dataset = train_dataset.map(
-                preprocess_function,
-                batched=True,
-                num_proc=args.preprocessing_num_workers,
-                load_from_cache_file=not args.overwrite_cache,
-                desc="Running tokenizer on train dataset",
-            )
+
+        # train feature 생성
+        train_dataset = train_dataset.map(
+            preprocess_function,
+            batched=True,
+            num_proc=args.preprocessing_num_workers,
+            load_from_cache_file=not args.overwrite_cache,
+        )
 
     if train_args.args.do_eval:
-        max_target_length = args.val_max_target_length
-        if "validation" not in raw_datasets:
-            raise ValueError("--do_eval requires a validation dataset")
         eval_dataset = raw_datasets["validation"]
+
+        # 몇 개의 sample만 볼 때 사용하기
         if args.max_eval_samples is not None:
             args.max_eval_samples = min(len(eval_dataset), args.max_eval_samples)
             eval_dataset = eval_dataset.select(range(args.max_eval_samples))
-        with train_args.args.main_process_first(desc="validation dataset map pre-processing"):
-            eval_dataset = eval_dataset.map(
-                preprocess_function,
-                batched=True,
-                num_proc=args.preprocessing_num_workers,
-                load_from_cache_file=not args.overwrite_cache,
-                desc="Running tokenizer on validation dataset",
-            )
+
+        # valid feature 생성
+        eval_dataset = eval_dataset.map(
+            preprocess_function,
+            batched=True,
+            num_proc=args.preprocessing_num_workers,
+            load_from_cache_file=not args.overwrite_cache,
+        )
 
     # Data collator
     label_pad_token_id  = -100 if args.ignore_pad_token_for_loss else tokenizer.pad_token_id
@@ -81,7 +73,7 @@ def train():
         pad_to_multiple_of=8 if train_args.args.fp16 else None,
     )
     
-    # Initialize our Trainer
+    # trainer 초기화
     trainer = Seq2SeqTrainer(
         model=model,
         args=train_args.args,
@@ -128,14 +120,6 @@ def train():
 
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
-
-    kwargs = {"finetuned_from": cfg.model.model_name_or_path, "tasks": "summarization"}
-    if train_args.args.push_to_hub:
-        trainer.push_to_hub(**kwargs)
-    else:
-        trainer.create_model_card(**kwargs)
-
-    return results
 
 if __name__ == "__main__":
     if cfg.wandb.wandb_mode:

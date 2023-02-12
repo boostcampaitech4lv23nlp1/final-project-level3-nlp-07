@@ -1,16 +1,13 @@
 from datasets import Dataset, DatasetDict, concatenate_datasets
 from typing import Dict, List
-
 import json
 import pandas as pd
-import torch
 
 
 # json 형식 파일을 불러오는 함수
 def load_json(path: str) -> Dict[str, str]:
     with open(path) as f:
         data = json.load(f)
-
     return data
 
 
@@ -44,7 +41,6 @@ def load_data(path: Dict) -> List[str]:
     data['dialogue'] = dialogue
     data['summary'] = summary
     data = Dataset.from_pandas(pd.DataFrame(data))
-
     return data
 
 
@@ -61,5 +57,4 @@ def load_and_concat_dataset(path: str):
         train_datasets = concatenate_datasets([train_datasets, prev_train_data])
         valid_datasets = concatenate_datasets([valid_datasets, prev_valid_data])
     datasets = DatasetDict({'train' : train_datasets, 'validation' : valid_datasets})
-
     return datasets
