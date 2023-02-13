@@ -58,7 +58,7 @@ class GeneratorParameters:
 
 def generate_model(model, tokenizer, input):
     default_parameters = GeneratorParameters()
-    inputs = tokenizer(input, padding="longest", truncation=True, return_tensors="pt")
+    inputs = tokenizer(input, padding="max_length", max_length=512, truncation=True, return_tensors="pt")
     candidates_input_ids = model.generate(
             input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"],
             num_beams=default_parameters.num_beams,

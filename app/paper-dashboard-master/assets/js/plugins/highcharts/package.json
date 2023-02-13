@@ -1,0 +1,103 @@
+{
+  "_args": [
+    [
+      "highcharts",
+      "/opt/ml"
+    ]
+  ],
+  "_from": "highcharts@latest",
+  "_hasShrinkwrap": false,
+  "_id": "highcharts@10.3.3",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/highcharts",
+  "_nodeVersion": "16.13.0",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/highcharts_10.3.3_1674202489152_0.33532203361156254"
+  },
+  "_npmUser": {
+    "email": "torstein@highsoft.com",
+    "name": "torsteinhonsi"
+  },
+  "_npmVersion": "8.1.0",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "highcharts",
+    "raw": "highcharts",
+    "rawSpec": "",
+    "scope": null,
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/highcharts/-/highcharts-10.3.3.tgz",
+  "_shasum": "b8acca24f2d4b1f2f726540734166e59e07b35c4",
+  "_shrinkwrap": null,
+  "_spec": "highcharts",
+  "_where": "/opt/ml",
+  "author": {
+    "email": "support@highcharts.com",
+    "name": "Highsoft AS",
+    "url": "http://www.highcharts.com/about"
+  },
+  "bugs": {
+    "url": "https://github.com/highcharts/highcharts/issues"
+  },
+  "dependencies": {},
+  "description": "JavaScript charting framework",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "fileCount": 1954,
+    "integrity": "sha512-r7wgUPQI9tr3jFDn3XT36qsNwEIZYcfgz4mkKEA6E4nn5p86y+u1EZjazIG4TRkl5/gmGRtkBUiZW81g029RIw==",
+    "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJjyk15ACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2VmqcqBAAoiaWPzddw7PO0gh+oB7lhWd3TvDJMb6wIof+J7EKzw55BPWT\r\nnXq89zOhq1fg9kr1PWk7f+j2GorsJ0hm++DqsvRGgCGu6ldNKhcp7Vb/pLMy\r\nWr6fod2bkIFm4cyj0jpHwLNM7/I7bbLZGKjmF1z8k5z3zIiBIDNFKpC5VccP\r\nnEWaB0I03OYmH26XAS0yVEMsVezis6KLRJDRqcjnUd8oHEb2aAEORqYQFwiL\r\n3THuue/tD8JVUTi7rcWbn4ytyveiGGgJZrSXVJO+uhGcJeM6c/dE4hElgfi/\r\nQeKZJiEKw189J9ZNMR6sNK/G0TgnRNNKa4qU239Yt8KHhyjZ3A5DBmIBvwAm\r\nLIyFVdUKHsr7TVQxYKac2xiRlSY+i9ouELozaVCSyBOfqQQhRQqfUCLpHTDZ\r\nHAWs14yO6I++JRUH3Q93P1N5Q4qYpg8NcYwRZtuvVNOHxYP9R2dp2SNsQgV3\r\nY1xs7fdtePhy4P1+W9DtGWRXS8h1F2DwoKOGFREKb/dP0ae6TM1P7uVVW6IN\r\nZLXjUpf1IQ2s0+pDRUOvFmPjXAYJlsenKtiveIJb4dsi8/vVjef1vPYjZjMf\r\n2gaCUhlt1mQ0hpqam1MzGNAYPpHzDaa35+R4QAyw4gGvrDEkpkZDLhu6tBp6\r\nbBwPRP/pfcKmSNw0PkWhuA7y8jtCWs4FFDY=\r\n=RcMp\r\n-----END PGP SIGNATURE-----\r\n",
+    "shasum": "b8acca24f2d4b1f2f726540734166e59e07b35c4",
+    "signatures": [
+      {
+        "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+        "sig": "MEQCIHQMdvZOVIu9F1uo/HFvOjTEjFN3C3/t1VtBGIm1VemYAiBRqrzHneyoD5nVzyN+9oRMgLr4unMNzsv9lwfinTZIsg=="
+      }
+    ],
+    "tarball": "https://registry.npmjs.org/highcharts/-/highcharts-10.3.3.tgz",
+    "unpackedSize": 80757209
+  },
+  "gitHead": "e1419d8a0eebf8ea32bb9c2a1c0f7fc11aa4c188",
+  "homepage": "http://www.highcharts.com",
+  "keywords": [
+    "browserify",
+    "charts",
+    "data",
+    "dataviz",
+    "graphs",
+    "visualization",
+    "webpack"
+  ],
+  "license": "https://www.highcharts.com/license",
+  "main": "highcharts.js",
+  "maintainers": [
+    {
+      "name": "torsteinhonsi",
+      "email": "torstein@highsoft.com"
+    },
+    {
+      "name": "cvasseng",
+      "email": "hello@vasseng.com"
+    },
+    {
+      "name": "blacklabel",
+      "email": "admin@blacklabel.pl"
+    }
+  ],
+  "name": "highcharts",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/highcharts/highcharts-dist.git"
+  },
+  "types": "highcharts.d.ts",
+  "version": "10.3.3"
+}

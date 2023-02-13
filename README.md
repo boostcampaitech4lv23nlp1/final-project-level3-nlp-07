@@ -62,7 +62,7 @@ Project Design<br>DTS modeling<br>FrontEnd<br>Deployment|Dataset Search<br>Front
 &nbsp; 
 
 ## How to Run
-* 빠른 실행은 http://49.50.162.64:30001/examples/dashboard.html 입니다. (업데이트 예정)
+* 빠른 실행은 http://101.101.218.23:30002/ 입니다.
 
 ### Poetry dependency
 ```

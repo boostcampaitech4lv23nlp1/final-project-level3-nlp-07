@@ -113,14 +113,20 @@ function timeline(result){
         })
     };
 function highlightchart(data){
+    // var Highcharts = require('highcharts');
     console.log('response data')
-    console.log(data)
+    // console.log(data)
     console.log(typeof data)
     // 카드 옵션 입력하기
     // 전체 대화수 녹이기
     var Response = JSON.parse(data)
     var for_data = Response['timeline']
     var total_len = Response['total_len'];
+    console.log(for_data[0])
+    console.log('dialogue and user length compare')
+    console.log(for_data[0]['dialogue'].length)
+    console.log(for_data[0]['user'].length)
+    console.log(total_len[0])
     // 요약 발화수 녹이기
     var dts_len = for_data.length;
     // 요약 발화수 녹이기
@@ -148,30 +154,29 @@ function highlightchart(data){
         label : for_data[i]['content'],
         description : for_data[i]['dialogue'][0] + '...' + '요약 결과 보기',
         dialogue : for_data[i]['dialogue'],
-        r_dialogue : for_data[i]['raw_dialogue'],
         user : for_data[i]['user']
-    })
+        })
     };
-    console.log('input_data');
+        // r_dialogue : for_data[i]['raw_dialogue'],
+    console.log('input_data first row');
     // console.log(data[0]);
     // console.log(data[0]['start']);
     // console.log(data[0]['content']);
-    console.log(input_data);
-    var charts = Highcharts.chart('charts', {
+    console.log(input_data[0]);
+    console.log(input_data.length);
+    console.log(input_data[0]['user'].length);
+    console.log(input_data[0]['dialogue'].length);
+    console.log('thank you');
+    var options = {
         chart: {
             zoomType: 'x',
             type: 'timeline',
-            events:{
-                load: function(event){
-                    event.target.reflow()
-                //     const parentDiv = document.getElementById("parentDiv");
-                //     const childDiv = document.getElementById("childDiv");
-                //     parentDiv.style.height = `${childDiv.offsetHeight}px`;
-                // }
-            }
-        }
-
-        },
+            // events:{
+            //     load: function(event){
+            //         event.target.reflow()
+            //     }
+            // }
+            },
         reflow : true,
         zooming :{
             type : "x"
@@ -209,8 +214,9 @@ function highlightchart(data){
         //   dateTimeLabelFormats: {
         //     second: '%H:%M:%S'
         //   }
-      },
+            },
         series: [{
+            data: input_data,
             dataLabels: {
                 allowOverlap: true,
                 format: '<span style="color:{point.color}">● </span><span style="font-weight: bold;" > ' +
@@ -219,6 +225,7 @@ function highlightchart(data){
             zIndex : -1,
             events:{  // 이벤트
                 click: function (event){ // 클릭이벤트 
+                    // event.preventDefault();
                     while (summary.firstChild) {
                         summary.removeChild(summary.firstChild);
                       }
@@ -246,9 +253,9 @@ function highlightchart(data){
                         head.appendChild(t1);
                         body.appendChild(t2);
                         foot.appendChild(t3);
-                        summary.appendChild(head)
-                        summary.appendChild(body)
-                        summary.appendChild(foot)
+                        summary.appendChild(head);
+                        summary.appendChild(body);
+                        summary.appendChild(foot);
                     })
 
                 }
@@ -256,9 +263,9 @@ function highlightchart(data){
             marker: {
                 symbol: 'circle'
             },
-            data: input_data,
             }]
-    });
+    };
+    charts = Highcharts.chart('charts', options);
     charts.reflow()
     return charts;
     // $('total_len').text
@@ -305,7 +312,7 @@ form.addEventListener("click", function(event){
     event.preventDefault();
     console.log('request true');
     console.log(request);
-    alert('채팅방 분석을 시작합니다..')
+    
     var chat_rooms2 = select.value;
     var time_periods2 = document.getElementById('time_period').value;
     var start_dates2 = document.getElementById('start_date').value;
@@ -335,8 +342,12 @@ form.addEventListener("click", function(event){
     //     alert('키워드 추출이 완료되었습니다. 대화 내 걸맞는 주제를 찾고 있습니다...')
     // }
     // );
+    // a = postData(url+'/dts' , request).then((data)=>{console.log(data)})
+    alert('채팅방 분석을 시작합니다.')
+
     postData(url+'/dts' , request).then((data)=>{highlightchart(data)})
     .catch((error) =>{
+        console.log('this is error happening')
         console.log(error)
         alert('입력이 거부되었습니다. DTSx')
     })

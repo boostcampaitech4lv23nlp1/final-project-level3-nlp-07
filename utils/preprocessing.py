@@ -3,7 +3,7 @@ import re
 # from pykospacing import Spacing
 # from hanspell import spell_checker
 
-path = "/opt/ml/input/data/hate_data.csv"                                                # 파일의 폴더 경로
+path = "/opt/ml/input/final-project-level3-nlp-07/data/hate_data.csv"                                                # 파일의 폴더 경로
 # output_path = "경로 입력 필요"
 
 # df = pd.read_csv(path + "파일 이름")                         # csv 파일 DataFrame으로 불러오기

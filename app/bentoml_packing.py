@@ -9,7 +9,8 @@ from prediction import *
 import torch
 import numpy as np
 import pandas as pd
-# sys.path.append("../utils") # 부모 경로 추가하는 법 -> 이미 load_dataset.py에서 추가가 되었다.
+import sys
+sys.path.append("../utils") # 부모 경로 추가하는 법 -> 이미 load_dataset.py에서 추가가 되었다.
 from postprocessing import postprocess
 
 
@@ -60,7 +61,7 @@ if __name__ == "__main__":
 
     dts_cs_model = CSModel()
 
-    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/poc/Dialog_Topic_segmentation/Topic_segmentation.pt'))
+    dts_cs_model.load_state_dict(torch.load('/opt/ml/input/data/Topic_segmentation.pt'))
 
     dts_cs_model.to(device)  
 

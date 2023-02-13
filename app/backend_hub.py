@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from prediction import total_key_word_extraction
 from validation import *
 app = FastAPI()
-bento_API = 'http://127.0.0.1:55296'
+bento_API = 'http://127.0.0.1:60803'
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*'],
@@ -117,12 +117,6 @@ def make_dts(item : DtsInput):
 
     ## Json 객체로 return을 해주는데 ensure_ascii = False를 해주어야 json.dumps를 할 때 한글이 깨지지 않음
     return json.dumps(output, ensure_ascii = False)
-
-## Todo: /summary
-    ## Todo: 알맞는 timeline이 넘어옴
-    ## Todo: 넘어온 timeline을 BentoML server에 전달
-    ## Todo: BentoML Server Summary 태우고 다시 Backend에 전달
-    ## Todo: Summary output Frontend에 전달
 
 
 

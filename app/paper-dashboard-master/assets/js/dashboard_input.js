@@ -1,6 +1,6 @@
 let slider = document.querySelector(".slider");
 let sliderValue = document.querySelector(".slider-value");
-const url = 'http://127.0.0.1:30001';
+const url = 'http://101.101.218.23:30001';
 
 
 $(document).ready(function(){
@@ -60,8 +60,10 @@ function postData(url = '', data = {}) {
   const response = fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json; charset=utf-8'
+      'Content-Type': 'application/json; charset=utf-8',
+      "Set-Cookie": "SameSite=None;"
     },
+    // credentials : 'same-origin',               // 시발 제발되라...
     body: JSON.stringify(data)
   //   redirect : 'follow',
   //   referrerPolicy : 'same-origin'
